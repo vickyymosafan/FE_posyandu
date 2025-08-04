@@ -1,22 +1,35 @@
 {
   "expo": {
-    "name": "client",
-    "slug": "client",
+    "name": "Posyandu Lansia",
+    "slug": "posyandu-lansia",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "client",
+    "scheme": "posyandu-lansia",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "Aplikasi Mobile untuk Posyandu Lansia - Sistem informasi kesehatan berbasis mobile untuk melayani pemeriksaan kesehatan rutin lansia",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Aplikasi ini memerlukan akses kamera untuk memindai QR Code pasien dan mengambil foto profil",
+        "NSPhotoLibraryUsageDescription": "Aplikasi ini memerlukan akses galeri foto untuk memilih foto profil pasien"
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.VIBRATE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -33,10 +46,29 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Aplikasi ini memerlukan akses kamera untuk memindai QR Code pasien."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Aplikasi ini memerlukan akses galeri foto untuk memilih foto profil pasien."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c59070ae-c8a6-4e22-9684-282d12b7fab3"
+      }
+    },
+    "owner": "vickymosafan1"
   }
 }

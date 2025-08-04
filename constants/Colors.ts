@@ -1,26 +1,55 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Enhanced color system with accessibility support for elderly users
  */
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+// Base color palette optimized for elderly users
+const tintColorLight = '#2563eb'; // High contrast blue
+const tintColorDark = '#60a5fa';
 
+// Static colors for backward compatibility and elderly-friendly design
 export const Colors = {
   light: {
-    text: '#11181C',
-    background: '#fff',
+    text: '#1e293b',
+    background: '#f8fafc',
     tint: tintColorLight,
-    icon: '#687076',
-    tabIconDefault: '#687076',
+    icon: '#64748b',
+    tabIconDefault: '#64748b',
     tabIconSelected: tintColorLight,
+    surface: '#ffffff',
+    border: '#e2e8f0',
+    error: '#ef4444',
+    success: '#10b981',
+    warning: '#f59e0b',
+    // Elderly-friendly colors
+    primaryButton: '#2563eb',
+    secondaryButton: '#64748b',
+    dangerButton: '#dc2626',
+    successButton: '#059669',
+    // High contrast variants
+    textHighContrast: '#000000',
+    backgroundHighContrast: '#ffffff',
+    borderHighContrast: '#000000',
   },
   dark: {
-    text: '#ECEDEE',
-    background: '#151718',
+    text: '#f1f5f9',
+    background: '#0f172a',
     tint: tintColorDark,
-    icon: '#9BA1A6',
-    tabIconDefault: '#9BA1A6',
+    icon: '#94a3b8',
+    tabIconDefault: '#94a3b8',
     tabIconSelected: tintColorDark,
+    surface: '#1e293b',
+    border: '#334155',
+    error: '#f87171',
+    success: '#34d399',
+    warning: '#fbbf24',
+    // Elderly-friendly colors
+    primaryButton: '#3b82f6',
+    secondaryButton: '#6b7280',
+    dangerButton: '#ef4444',
+    successButton: '#10b981',
+    // High contrast variants
+    textHighContrast: '#ffffff',
+    backgroundHighContrast: '#000000',
+    borderHighContrast: '#ffffff',
   },
 };

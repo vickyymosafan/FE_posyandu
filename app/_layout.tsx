@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -18,12 +19,25 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="patient-registration" options={{ headerShown: false }} />
+          <Stack.Screen name="qr-display" options={{ headerShown: false }} />
+          <Stack.Screen name="qr-scanner" options={{ headerShown: false }} />
+          <Stack.Screen name="patient-profile" options={{ headerShown: false }} />
+          <Stack.Screen name="physical-exam" options={{ headerShown: false }} />
+          <Stack.Screen name="advanced-exam" options={{ headerShown: false }} />
+          <Stack.Screen name="treatment" options={{ headerShown: false }} />
+          <Stack.Screen name="prescription-form" options={{ headerShown: false }} />
+          <Stack.Screen name="referral-form" options={{ headerShown: false }} />
+          <Stack.Screen name="accessibility-settings" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
