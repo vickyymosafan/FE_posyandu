@@ -59,24 +59,9 @@ export default function HomeScreen() {
       title: 'Pemeriksaan Kesehatan',
       description: 'Input data pemeriksaan fisik dan kesehatan',
       onPress: () => {
-        Alert.alert(
-          'Pilih Jenis Pemeriksaan',
-          'Pilih jenis pemeriksaan yang akan dilakukan:',
-          [
-            {
-              text: 'Pemeriksaan Fisik',
-              onPress: () => router.push('/physical-exam'),
-            },
-            {
-              text: 'Pemeriksaan Lanjutan',
-              onPress: () => router.push('/advanced-exam'),
-            },
-            {
-              text: 'Batal',
-              style: 'cancel',
-            },
-          ]
-        );
+        // For web compatibility, navigate directly to physical exam
+        // Users can navigate to advanced exam from there
+        router.push('/physical-exam');
       },
     },
     {
