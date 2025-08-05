@@ -52,7 +52,26 @@ export default function PatientRegistrationScreen() {
 
   const pickImage = async () => {
     try {
-      // Request permission
+      if (Platform.OS === 'web') {
+        // For web, use HTML file input
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (event: any) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+              setSelectedImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
+        return;
+      }
+
+      // Request permission for mobile
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       
       if (permissionResult.granted === false) {
@@ -64,7 +83,7 @@ export default function PatientRegistrationScreen() {
         return;
       }
 
-      // Launch image picker
+      // Launch image picker for mobile
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         allowsEditing: true,
@@ -83,7 +102,27 @@ export default function PatientRegistrationScreen() {
 
   const takePhoto = async () => {
     try {
-      // Request permission
+      if (Platform.OS === 'web') {
+        // For web, use HTML file input with camera
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment'; // Use rear camera
+        input.onchange = (event: any) => {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+              setSelectedImage(e.target.result);
+            };
+            reader.readAsDataURL(file);
+          }
+        };
+        input.click();
+        return;
+      }
+
+      // Request permission for mobile
       const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
       
       if (permissionResult.granted === false) {
@@ -95,7 +134,7 @@ export default function PatientRegistrationScreen() {
         return;
       }
 
-      // Launch camera
+      // Launch camera for mobile
       const result = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
         aspect: [1, 1],
@@ -112,15 +151,21 @@ export default function PatientRegistrationScreen() {
   };
 
   const showImagePicker = () => {
-    Alert.alert(
-      'Pilih Foto',
-      'Pilih sumber foto untuk lansia',
-      [
-        { text: 'Galeri', onPress: pickImage },
-        { text: 'Kamera', onPress: takePhoto },
-        { text: 'Batal', style: 'cancel' },
-      ]
-    );
+    if (Platform.OS === 'web') {
+      // For web, directly open file picker without alert
+      pickImage();
+    } else {
+      // For mobile, show the original picker
+      Alert.alert(
+        'Pilih Foto',
+        'Pilih sumber foto untuk lansia',
+        [
+          { text: 'Galeri', onPress: pickImage },
+          { text: 'Kamera', onPress: takePhoto },
+          { text: 'Batal', style: 'cancel' },
+        ]
+      );
+    }
   };
 
   const onSubmit = async (data: FormData) => {
