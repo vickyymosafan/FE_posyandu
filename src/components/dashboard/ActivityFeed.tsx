@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { RecentActivity } from '@/types/dashboard';
 import { formatDateTime, formatRelativeTime } from '@/lib/utils';
 
@@ -15,6 +15,12 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
   loading = false,
   onRefresh
 }) => {
+  const [showAll, setShowAll] = useState(false);
+  
+  // Show only first 5 activities initially, or all if showAll is true
+  const displayedActivities = showAll ? activities : activities.slice(0, 5);
+  const hasMoreActivities = activities.length > 5;
+
   const getActivityIcon = (jenis: RecentActivity['jenis']) => {
     switch (jenis) {
       case 'pemeriksaan_fisik':
@@ -165,72 +171,89 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({
             </p>
           </div>
         ) : (
-          <div className="flow-root">
-            <ul className="-mb-8">
-              {activities.map((activity, activityIdx) => (
-                <li key={`${activity.jenis}-${activity.id}-${activityIdx}`}>
-                  <div className="relative pb-8">
-                    {activityIdx !== activities.length - 1 ? (
-                      <span
-                        className="absolute top-6 left-6 -ml-px h-full w-0.5 bg-gray-200"
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    <div className="relative flex items-start space-x-4 group hover:bg-gray-50 rounded-xl p-3 -m-3 transition-colors">
-                      <div className="relative flex-shrink-0">
-                        {getActivityIcon(activity.jenis)}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="space-y-2">
-                          <div className="text-sm">
-                            <span className="font-semibold text-gray-900">
-                              {getActivityLabel(activity.jenis)}
-                            </span>
-                            <span className="text-gray-500 mx-1">untuk</span>
-                            <span className="font-semibold text-blue-600">
-                              {activity.nama_pasien}
-                            </span>
-                            <span className="text-gray-400 text-xs ml-1">({activity.id_pasien})</span>
-                          </div>
-                          <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
-                            {activity.deskripsi}
-                          </p>
-                          <div className="flex items-center space-x-3 text-xs text-gray-500">
-                            <span className="flex items-center">
-                              <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                              </svg>
-                              {activity.admin_nama}
-                            </span>
-                            <span className="flex items-center">
-                              <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <time dateTime={activity.waktu} title={formatDateTime(new Date(activity.waktu))}>
-                                {formatRelativeTime(new Date(activity.waktu))}
-                              </time>
-                            </span>
+          <>
+            {/* Fixed height container for scrollable activities */}
+            <div className={`flow-root ${showAll ? 'max-h-96 overflow-y-auto' : ''}`}>
+              <ul className="-mb-8">
+                {displayedActivities.map((activity, activityIdx) => (
+                  <li key={`${activity.jenis}-${activity.id}-${activityIdx}`}>
+                    <div className="relative pb-8">
+                      {activityIdx !== displayedActivities.length - 1 ? (
+                        <span
+                          className="absolute top-6 left-6 -ml-px h-full w-0.5 bg-gray-200"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      <div className="relative flex items-start space-x-4 group hover:bg-gray-50 rounded-xl p-3 -m-3 transition-colors">
+                        <div className="relative flex-shrink-0">
+                          {getActivityIcon(activity.jenis)}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="space-y-2">
+                            <div className="text-sm">
+                              <span className="font-semibold text-gray-900">
+                                {getActivityLabel(activity.jenis)}
+                              </span>
+                              <span className="text-gray-500 mx-1">untuk</span>
+                              <span className="font-semibold text-blue-600">
+                                {activity.nama_pasien}
+                              </span>
+                              <span className="text-gray-400 text-xs ml-1">({activity.id_pasien})</span>
+                            </div>
+                            <p className="text-sm text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
+                              {activity.deskripsi}
+                            </p>
+                            <div className="flex items-center space-x-3 text-xs text-gray-500">
+                              <span className="flex items-center">
+                                <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                                {activity.admin_nama}
+                              </span>
+                              <span className="flex items-center">
+                                <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <time dateTime={activity.waktu} title={formatDateTime(new Date(activity.waktu))}>
+                                  {formatRelativeTime(new Date(activity.waktu))}
+                                </time>
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-        {activities.length > 0 && (
-          <div className="mt-8 text-center">
-            <button className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm">
-              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Lihat semua aktivitas
-            </button>
-          </div>
+            {/* Show more/less button */}
+            {hasMoreActivities && (
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setShowAll(!showAll)}
+                  className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                >
+                  {showAll ? (
+                    <>
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                      Tampilkan 5 terbaru
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      Lihat semua aktivitas ({activities.length})
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

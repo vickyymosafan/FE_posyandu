@@ -16,6 +16,19 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
   onRefresh
 }) => {
   const [activeTab, setActiveTab] = useState<'penilaian' | 'pemeriksaan'>('penilaian');
+  const [showAll, setShowAll] = useState(false);
+  
+  // Show only first 5 items initially, or all if showAll is true
+  const getDisplayedItems = (items: PendingFollowUp[]) => {
+    return showAll ? items : items.slice(0, 5);
+  };
+  
+  const displayedPenilaian = getDisplayedItems(data.penilaian_tertunda);
+  const displayedPemeriksaan = getDisplayedItems(data.pemeriksaan_tertunda);
+  
+  const hasMorePenilaian = data.penilaian_tertunda.length > 5;
+  const hasMorePemeriksaan = data.pemeriksaan_tertunda.length > 5;
+  const hasMoreItems = hasMorePenilaian || hasMorePemeriksaan;
 
   const getPriorityColor = (prioritas: PendingFollowUp['prioritas']) => {
     switch (prioritas) {
@@ -247,11 +260,11 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
               </nav>
             </div>
 
-            {/* Tab Content */}
-            <div className="space-y-4">
+            {/* Tab Content with Scrollable Container */}
+            <div className={`space-y-4 ${showAll ? 'max-h-96 overflow-y-auto' : ''}`}>
               {activeTab === 'penilaian' && (
                 <>
-                  {data.penilaian_tertunda.length === 0 ? (
+                  {displayedPenilaian.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                         <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -261,14 +274,14 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
                       <p className="text-sm text-gray-500">Tidak ada penilaian yang tertunda</p>
                     </div>
                   ) : (
-                    data.penilaian_tertunda.map(item => renderFollowUpItem(item, 'penilaian'))
+                    displayedPenilaian.map(item => renderFollowUpItem(item, 'penilaian'))
                   )}
                 </>
               )}
 
               {activeTab === 'pemeriksaan' && (
                 <>
-                  {data.pemeriksaan_tertunda.length === 0 ? (
+                  {displayedPemeriksaan.length === 0 ? (
                     <div className="text-center py-8">
                       <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
                         <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -278,11 +291,37 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
                       <p className="text-sm text-gray-500">Tidak ada pemeriksaan yang tertunda</p>
                     </div>
                   ) : (
-                    data.pemeriksaan_tertunda.map(item => renderFollowUpItem(item, 'pemeriksaan'))
+                    displayedPemeriksaan.map(item => renderFollowUpItem(item, 'pemeriksaan'))
                   )}
                 </>
               )}
             </div>
+
+            {/* Show more/less button */}
+            {hasMoreItems && (
+              <div className="mt-6 text-center">
+                <button 
+                  onClick={() => setShowAll(!showAll)}
+                  className="inline-flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                >
+                  {showAll ? (
+                    <>
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                      </svg>
+                      Tampilkan 5 terbaru
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      Lihat semua tindak lanjut ({totalPending})
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
