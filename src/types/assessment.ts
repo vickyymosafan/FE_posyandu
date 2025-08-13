@@ -4,7 +4,7 @@ export type AssessmentCategory = 'normal' | 'perlu_perhatian' | 'rujukan';
 
 export interface HealthAssessment {
   id: number;
-  id_pasien: number;
+  id_pasien: number | string;
   id_pemeriksaan_fisik?: number;
   id_tes_lanjutan?: number;
   kategori_penilaian: AssessmentCategory;

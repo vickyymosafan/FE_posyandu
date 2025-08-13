@@ -19,6 +19,8 @@ import { Patient } from '@/types/patient';
 import { PhysicalExamination, AdvancedTest } from '@/types/examination';
 import { HealthAssessment } from '@/types/assessment';
 // SWR not needed in this main page, used in child components
+import AuthGuard from '@/components/AuthGuard';
+import MainLayout from '@/components/Layout/MainLayout';
 
 // Using Patient type directly since the API returns standard Patient objects
 
@@ -112,7 +114,9 @@ export default function TreatmentAndReferralPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-7xl">
+    <AuthGuard>
+      <MainLayout>
+        <div className="space-y-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Manajemen Pengobatan dan Rujukan
@@ -342,39 +346,41 @@ export default function TreatmentAndReferralPage() {
         </Card>
       )}
 
-      {/* Treatment Modal */}
-      <Modal
-        isOpen={isTreatmentModalOpen}
-        onClose={() => setIsTreatmentModalOpen(false)}
-        title="Buat Resep Obat"
-        size="lg"
-      >
-        {selectedPatient && (
-          <TreatmentForm
-            patient={selectedPatient}
-            assessmentId={latestAssessment?.id}
-            onSuccess={handleTreatmentSuccess}
-            onCancel={() => setIsTreatmentModalOpen(false)}
-          />
-        )}
-      </Modal>
+          {/* Treatment Modal */}
+          <Modal
+            isOpen={isTreatmentModalOpen}
+            onClose={() => setIsTreatmentModalOpen(false)}
+            title="Buat Resep Obat"
+            size="lg"
+          >
+            {selectedPatient && (
+              <TreatmentForm
+                patient={selectedPatient}
+                assessmentId={latestAssessment?.id}
+                onSuccess={handleTreatmentSuccess}
+                onCancel={() => setIsTreatmentModalOpen(false)}
+              />
+            )}
+          </Modal>
 
-      {/* Referral Modal */}
-      <Modal
-        isOpen={isReferralModalOpen}
-        onClose={() => setIsReferralModalOpen(false)}
-        title="Buat Rujukan"
-        size="lg"
-      >
-        {selectedPatient && (
-          <ReferralForm
-            patient={selectedPatient}
-            assessmentId={latestAssessment?.id}
-            onSuccess={handleReferralSuccess}
-            onCancel={() => setIsReferralModalOpen(false)}
-          />
-        )}
-      </Modal>
-    </div>
+          {/* Referral Modal */}
+          <Modal
+            isOpen={isReferralModalOpen}
+            onClose={() => setIsReferralModalOpen(false)}
+            title="Buat Rujukan"
+            size="lg"
+          >
+            {selectedPatient && (
+              <ReferralForm
+                patient={selectedPatient}
+                assessmentId={latestAssessment?.id}
+                onSuccess={handleReferralSuccess}
+                onCancel={() => setIsReferralModalOpen(false)}
+              />
+            )}
+          </Modal>
+        </div>
+      </MainLayout>
+    </AuthGuard>
   );
 }

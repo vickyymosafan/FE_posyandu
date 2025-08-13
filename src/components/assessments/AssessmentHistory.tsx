@@ -11,7 +11,7 @@ import { formatDate, formatDateTime } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
 
 interface AssessmentHistoryProps {
-  patientId: number;
+  patientId: number | string;
   onSelectAssessment?: (assessment: AssessmentWithDetails) => void;
   showActions?: boolean;
 }
@@ -77,7 +77,8 @@ export default function AssessmentHistory({
   const loadAssessments = async () => {
     try {
       setIsLoading(true);
-      const data = await assessmentsApi.getPatientAssessments(patientId);
+      const normalizedId = typeof patientId === 'string' ? patientId : String(patientId);
+      const data = await assessmentsApi.getPatientAssessments(normalizedId);
       setAssessments(data);
     } catch (error: any) {
       console.error('Error loading assessments:', error);

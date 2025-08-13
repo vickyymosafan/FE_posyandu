@@ -63,6 +63,8 @@ export default function AssessmentPage() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentWithDetails | null>(null);
+  const [historyPatientId, setHistoryPatientId] = useState<number | null>(null);
+  const [isResolvingHistoryId, setIsResolvingHistoryId] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState<FilterOptions>({});
   const [showPatientModal, setShowPatientModal] = useState(false);
@@ -163,9 +165,36 @@ export default function AssessmentPage() {
     setViewMode('report');
   };
 
-  const handleViewHistory = (assessment: AssessmentWithDetails) => {
+  const handleViewHistory = async (assessment: AssessmentWithDetails) => {
     setSelectedAssessment(assessment);
-    setViewMode('history');
+    setIsResolvingHistoryId(true);
+    try {
+      let resolvedId: number | null = null;
+      // If assessment carries numeric id already
+      if (typeof assessment.id_pasien === 'number') {
+        resolvedId = assessment.id_pasien;
+      } else {
+        // Try local cache first
+        const local = patients.find(p => p.id_pasien === assessment.id_pasien || p.nama === assessment.nama_pasien);
+        if (local) {
+          resolvedId = local.id;
+        } else {
+          // Fallback: query backend to resolve code to numeric id
+          const resp = await patientsApi.getPatients({ query: String(assessment.id_pasien), limit: 1 });
+          const match = resp.data.pasien.find(p => p.id_pasien === assessment.id_pasien || p.nama === assessment.nama_pasien);
+          if (match) {
+            resolvedId = match.id;
+          }
+        }
+      }
+      setHistoryPatientId(resolvedId);
+    } catch (e) {
+      console.error('Failed to resolve patient id for history:', e);
+      setHistoryPatientId(null);
+    } finally {
+      setIsResolvingHistoryId(false);
+      setViewMode('history');
+    }
   };
 
   const handleAssessmentSuccess = () => {
@@ -179,6 +208,7 @@ export default function AssessmentPage() {
     setViewMode('list');
     setSelectedPatient(null);
     setSelectedAssessment(null);
+    setHistoryPatientId(null);
   };
 
   if (isLoading) {
@@ -371,10 +401,16 @@ export default function AssessmentPage() {
       )}
 
       {viewMode === 'history' && selectedAssessment && (
-        <AssessmentHistory
-          patientId={selectedAssessment.id_pasien}
-          onSelectAssessment={handleViewReport}
-        />
+        historyPatientId ? (
+          <AssessmentHistory
+            patientId={historyPatientId}
+            onSelectAssessment={handleViewReport}
+          />
+        ) : (
+          <Card className="p-6">
+            <div className="text-sm text-gray-600">{isResolvingHistoryId ? 'Menyiapkan data riwayat...' : 'Gagal menemukan pasien untuk riwayat.'}</div>
+          </Card>
+        )
       )}
 
       {/* Patient Selection Modal */}
