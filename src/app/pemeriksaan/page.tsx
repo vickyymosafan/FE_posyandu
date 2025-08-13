@@ -149,43 +149,12 @@ export default function PemeriksaanPage() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Pilih Pasien</h2>
 
               {/* Inline smart search with instant select */}
-              <div className="mb-6">
-                <PatientSearch
-                  onPatientSelect={handlePatientSelect}
-                  placeholder="Cari berdasarkan nama, NIK, atau nomor HP..."
-                  autoFocus={true}
-                  showResults={true}
-                />
-              </div>
-
-              {/* Divider */}
-              <div className="flex items-center my-2">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="px-3 text-sm text-gray-500">atau</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
-              {/* Manual ID input fallback */}
-              <form onSubmit={handlePatientIdSubmit} className="mt-4">
-                <div className="flex gap-3">
-                  <div className="flex-1">
-                    <Input
-                      type="text"
-                      value={patientIdInput}
-                      onChange={(e) => setPatientIdInput(e.target.value)}
-                      placeholder="Masukkan ID Pasien (ID sistem atau ID pasien)"
-                      disabled={loadingPatient}
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    loading={loadingPatient}
-                    disabled={!patientIdInput.trim() || loadingPatient}
-                  >
-                    Cari
-                  </Button>
-                </div>
-              </form>
+              <PatientSearch
+                onPatientSelect={handlePatientSelect}
+                placeholder="Cari berdasarkan nama, NIK, atau nomor HP..."
+                autoFocus={true}
+                showResults={true}
+              />
             </Card>
           )}
 
