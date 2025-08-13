@@ -180,14 +180,14 @@ export default function TestHistory({
             
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">
-                {trendData.latest || '-'}
+                {trendData.latest && typeof trendData.latest === 'number' ? trendData.latest.toFixed(2) : '-'}
               </p>
               <p className="text-sm text-gray-600">Terakhir (mg/dL)</p>
             </div>
             
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">
-                {trendData.average}
+                {isNaN(trendData.average) ? '-' : trendData.average}
               </p>
               <p className="text-sm text-gray-600">Rata-rata (mg/dL)</p>
             </div>
@@ -209,7 +209,7 @@ export default function TestHistory({
                   {trendData.tests.slice(0, 10).reverse().map((test, index) => {
                     const glucose = test.gula_darah || 0;
                     const maxGlucose = Math.max(...trendData.tests.map(t => t.gula_darah || 0));
-                    const height = Math.max((glucose / maxGlucose) * 100, 10);
+                    const height = maxGlucose > 0 ? Math.max((glucose / maxGlucose) * 100, 10) : 10;
                     const status = getGlucoseStatus(glucose);
                     
                     return (

@@ -28,8 +28,8 @@ export const treatmentsApi = {
    */
   getTreatmentsByPatient: async (patientId: number): Promise<TreatmentWithDetails[]> => {
     const response = await apiClient.get<any>(`/pasien/${patientId}/pengobatan`);
-    // The backend returns data in nested structure: { data: { pengobatan: [...] } }
-    return response.data?.pengobatan || [];
+    // The backend returns: { sukses: true, data: { riwayat_pengobatan: [...] } }
+    return response.data?.riwayat_pengobatan || [];
   },
 
   /**
