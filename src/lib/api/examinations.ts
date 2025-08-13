@@ -52,8 +52,9 @@ export const examinationsApi = {
    * Get patient's examination history
    */
   getPatientExaminations: async (patientId: number): Promise<PhysicalExamination[]> => {
-    const response = await apiClient.get<PhysicalExamination[]>(`/pasien/${patientId}/pemeriksaan`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/pemeriksaan`);
+    // The backend returns data in nested structure: { data: { pemeriksaan: [...] } }
+    return response.data?.pemeriksaan || [];
   },
 
   /**
@@ -99,8 +100,9 @@ export const examinationsApi = {
    * Get patient's advanced test history
    */
   getPatientAdvancedTests: async (patientId: number): Promise<AdvancedTest[]> => {
-    const response = await apiClient.get<AdvancedTest[]>(`/pasien/${patientId}/tes-lanjutan`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/tes-lanjutan`);
+    // The backend returns data in nested structure: { data: { tes_lanjutan: [...] } }
+    return response.data?.tes_lanjutan || [];
   },
 
   /**

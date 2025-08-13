@@ -75,8 +75,9 @@ export const advancedTestsApi = {
    * Get patient's advanced test history
    */
   getPatientAdvancedTests: async (patientId: number): Promise<AdvancedTest[]> => {
-    const response = await apiClient.get<AdvancedTest[]>(`/pasien/${patientId}/tes-lanjutan`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/tes-lanjutan`);
+    // The backend returns data in nested structure: { data: { tes_lanjutan: [...] } }
+    return response.data?.tes_lanjutan || [];
   },
 
   /**
@@ -101,8 +102,9 @@ export const advancedTestsApi = {
       ? `/pasien/${patientId}/tes-lanjutan?${queryString}` 
       : `/pasien/${patientId}/tes-lanjutan`;
     
-    const response = await apiClient.get<AdvancedTest[]>(url);
-    return response.data!;
+    const response = await apiClient.get<any>(url);
+    // The backend returns data in nested structure: { data: { tes_lanjutan: [...] } }
+    return response.data?.tes_lanjutan || [];
   },
 
   /**

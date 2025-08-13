@@ -80,8 +80,9 @@ export const assessmentsApi = {
    * Get patient's assessment history
    */
   getPatientAssessments: async (patientId: number): Promise<AssessmentWithDetails[]> => {
-    const response = await apiClient.get<AssessmentWithDetails[]>(`/pasien/${patientId}/penilaian`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/penilaian`);
+    // The backend returns data in nested structure: { data: { penilaian: [...] } }
+    return response.data?.penilaian || [];
   },
 
   /**

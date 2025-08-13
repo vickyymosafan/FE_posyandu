@@ -20,10 +20,16 @@ export default function ExaminationChart({
   // Sort examinations by date (oldest first for chart)
   const sortedExaminations = [...examinations]
     .filter(exam => {
-      if (metric === 'berat_badan') return exam.berat_badan;
-      if (metric === 'tinggi_badan') return exam.tinggi_badan;
-      if (metric === 'tekanan_darah') return exam.tekanan_darah_sistolik && exam.tekanan_darah_diastolik;
-      if (metric === 'bmi') return exam.berat_badan && exam.tinggi_badan;
+      // Convert string values to numbers for comparison
+      const beratBadan = parseFloat(exam.berat_badan as any) || 0;
+      const tinggiBadan = parseFloat(exam.tinggi_badan as any) || 0;
+      const tekananSistolik = parseFloat(exam.tekanan_darah_sistolik as any) || 0;
+      const tekananDiastolik = parseFloat(exam.tekanan_darah_diastolik as any) || 0;
+      
+      if (metric === 'berat_badan') return beratBadan > 0;
+      if (metric === 'tinggi_badan') return tinggiBadan > 0;
+      if (metric === 'tekanan_darah') return tekananSistolik > 0 && tekananDiastolik > 0;
+      if (metric === 'bmi') return beratBadan > 0 && tinggiBadan > 0;
       return false;
     })
     .sort((a, b) => new Date(a.tanggal_pemeriksaan).getTime() - new Date(b.tanggal_pemeriksaan).getTime());
@@ -44,16 +50,22 @@ export default function ExaminationChart({
     let value: number | null = null;
     let secondaryValue: number | null = null;
 
+    // Convert string values to numbers
+    const beratBadan = parseFloat(exam.berat_badan as any) || 0;
+    const tinggiBadan = parseFloat(exam.tinggi_badan as any) || 0;
+    const tekananSistolik = parseFloat(exam.tekanan_darah_sistolik as any) || 0;
+    const tekananDiastolik = parseFloat(exam.tekanan_darah_diastolik as any) || 0;
+
     if (metric === 'berat_badan') {
-      value = exam.berat_badan || null;
+      value = beratBadan > 0 ? beratBadan : null;
     } else if (metric === 'tinggi_badan') {
-      value = exam.tinggi_badan || null;
+      value = tinggiBadan > 0 ? tinggiBadan : null;
     } else if (metric === 'tekanan_darah') {
-      value = exam.tekanan_darah_sistolik || null;
-      secondaryValue = exam.tekanan_darah_diastolik || null;
-    } else if (metric === 'bmi' && exam.berat_badan && exam.tinggi_badan) {
-      const tinggiMeter = exam.tinggi_badan / 100;
-      value = exam.berat_badan / (tinggiMeter * tinggiMeter);
+      value = tekananSistolik > 0 ? tekananSistolik : null;
+      secondaryValue = tekananDiastolik > 0 ? tekananDiastolik : null;
+    } else if (metric === 'bmi' && beratBadan > 0 && tinggiBadan > 0) {
+      const tinggiMeter = tinggiBadan / 100;
+      value = beratBadan / (tinggiMeter * tinggiMeter);
     }
 
     return {
@@ -62,7 +74,7 @@ export default function ExaminationChart({
       secondaryValue,
       exam
     };
-  }).filter(item => item.value !== null);
+  }).filter(item => item.value !== null && typeof item.value === 'number');
 
   if (chartData.length === 0) {
     return (
@@ -111,6 +123,11 @@ export default function ExaminationChart({
   };
 
   const formatValue = (value: number) => {
+    // Ensure value is a valid number
+    if (typeof value !== 'number' || isNaN(value)) {
+      return 'N/A';
+    }
+    
     if (metric === 'berat_badan') return `${value.toFixed(1)} kg`;
     if (metric === 'tinggi_badan') return `${value.toFixed(1)} cm`;
     if (metric === 'tekanan_darah') return `${value.toFixed(0)} mmHg`;

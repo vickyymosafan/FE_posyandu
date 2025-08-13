@@ -35,6 +35,11 @@ export default function ExaminationHistory({
 
   // Calculate BMI and categorize examinations
   const examinationsWithBMI = useMemo((): ExaminationWithBMI[] => {
+    if (!Array.isArray(examinations)) {
+      console.warn('Examinations is not an array:', examinations);
+      return [];
+    }
+    
     return examinations.map(exam => {
       let bmi: number | undefined;
       let bmiCategory: string | undefined;
@@ -59,6 +64,9 @@ export default function ExaminationHistory({
 
   // Sort examinations by date (newest first)
   const sortedExaminations = useMemo(() => {
+    if (!Array.isArray(examinationsWithBMI)) {
+      return [];
+    }
     return [...examinationsWithBMI].sort((a, b) => 
       new Date(b.tanggal_pemeriksaan).getTime() - new Date(a.tanggal_pemeriksaan).getTime()
     );

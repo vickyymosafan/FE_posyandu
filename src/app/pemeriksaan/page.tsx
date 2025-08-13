@@ -27,7 +27,7 @@ export default function PemeriksaanPage() {
 
   // Fetch patient examinations when patient is selected
   const { 
-    data: examinations = [], 
+    data: examinationsData, 
     error: examinationsError, 
     mutate: mutateExaminations,
     isLoading: loadingExaminations
@@ -39,6 +39,9 @@ export default function PemeriksaanPage() {
       revalidateOnReconnect: true
     }
   );
+
+  // Ensure examinations is always an array
+  const examinations = Array.isArray(examinationsData) ? examinationsData : [];
 
   const handlePatientSelect = (patient: Patient) => {
     setSelectedPatient(patient);

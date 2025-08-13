@@ -28,8 +28,9 @@ export const referralsApi = {
    * Get referrals by patient ID
    */
   getReferralsByPatient: async (patientId: number): Promise<ReferralWithDetails[]> => {
-    const response = await apiClient.get<ReferralWithDetails[]>(`/pasien/${patientId}/rujukan`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/rujukan`);
+    // The backend returns data in nested structure: { data: { rujukan: [...] } }
+    return response.data?.rujukan || [];
   },
 
   /**

@@ -27,8 +27,9 @@ export const treatmentsApi = {
    * Get treatments by patient ID
    */
   getTreatmentsByPatient: async (patientId: number): Promise<TreatmentWithDetails[]> => {
-    const response = await apiClient.get<TreatmentWithDetails[]>(`/pasien/${patientId}/pengobatan`);
-    return response.data!;
+    const response = await apiClient.get<any>(`/pasien/${patientId}/pengobatan`);
+    // The backend returns data in nested structure: { data: { pengobatan: [...] } }
+    return response.data?.pengobatan || [];
   },
 
   /**

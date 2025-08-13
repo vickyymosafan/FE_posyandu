@@ -129,4 +129,14 @@ export const patientsApi = {
       }
     }
   },
+
+  /**
+   * Get patient's recent activities
+   */
+  getPatientActivities: async (patientId: number, limit?: number): Promise<any> => {
+    const queryParams = limit ? `?limit=${limit}` : '';
+    const response = await apiClient.get<any>(`/pasien/${patientId}/aktivitas${queryParams}`);
+    // The backend returns data in nested structure: { data: { pasien: {...}, aktivitas: [...] } }
+    return response.data?.aktivitas || [];
+  },
 };
