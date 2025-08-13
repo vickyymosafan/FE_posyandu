@@ -114,7 +114,8 @@ export const patientsApi = {
    */
   scanBarcode: async (barcodeData: string): Promise<Patient> => {
     try {
-      const response = await apiClient.post<Patient>('/barcode/scan', { barcode: barcodeData });
+      // For manual input, use the search endpoint instead of barcode scan
+      const response = await apiClient.get<Patient>(`/pasien/search/barcode?code=${encodeURIComponent(barcodeData)}`);
       return response.data!;
     } catch (error: any) {
       // Enhanced error handling for barcode scanning
