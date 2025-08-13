@@ -20,13 +20,13 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
   const getPriorityColor = (prioritas: PendingFollowUp['prioritas']) => {
     switch (prioritas) {
       case 'Tinggi':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-200';
       case 'Sedang':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'Rendah':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -56,21 +56,21 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
   };
 
   const renderFollowUpItem = (item: PendingFollowUp, type: 'penilaian' | 'pemeriksaan') => (
-    <div key={`${type}-${item.id}`} className="border-l-4 border-l-blue-400 bg-blue-50 p-4 rounded-r-lg">
+    <div key={`${type}-${item.id}`} className="border-l-4 border-l-blue-400 bg-blue-50 p-4 rounded-r-lg mb-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center space-x-2">
-            <h4 className="text-sm font-medium text-gray-900">
+          <div className="flex items-center space-x-2 mb-2">
+            <h4 className="text-sm font-semibold text-gray-900">
               {item.nama} ({item.id_pasien})
             </h4>
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityColor(item.prioritas)}`}>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getPriorityColor(item.prioritas)}`}>
               {getPriorityIcon(item.prioritas)}
               <span className="ml-1">{item.prioritas}</span>
             </span>
           </div>
           
           {item.nomor_hp && (
-            <p className="text-sm text-gray-600 mt-1">
+            <p className="text-sm text-gray-600 mb-1">
               📞 {item.nomor_hp}
             </p>
           )}
@@ -78,17 +78,17 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
           {type === 'penilaian' && (
             <>
               {item.kategori_penilaian && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mb-1">
                   <span className="font-medium">Kategori:</span> {item.kategori_penilaian}
                 </p>
               )}
               {item.temuan && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mb-1">
                   <span className="font-medium">Temuan:</span> {item.temuan}
                 </p>
               )}
               {item.rekomendasi && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mb-1">
                   <span className="font-medium">Rekomendasi:</span> {item.rekomendasi}
                 </p>
               )}
@@ -110,25 +110,12 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
                 </p>
               )}
               {item.jenis_tindak_lanjut && (
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mb-1">
                   <span className="font-medium">Tindak lanjut:</span> {item.jenis_tindak_lanjut}
                 </p>
               )}
             </>
           )}
-
-          {item.status_rujukan && (
-            <p className="text-sm text-gray-600 mt-1">
-              <span className="font-medium">Status rujukan:</span> {item.status_rujukan}
-              {item.fasilitas_rujukan && ` ke ${item.fasilitas_rujukan}`}
-            </p>
-          )}
-        </div>
-
-        <div className="flex-shrink-0 ml-4">
-          <button className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-            Tindak Lanjut
-          </button>
         </div>
       </div>
     </div>
@@ -136,18 +123,24 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white shadow rounded-lg">
-        <div className="px-4 py-5 sm:p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 py-6 border-b border-gray-100">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center">
+              <svg className="h-6 w-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               Tindak Lanjut Tertunda
             </h3>
-            <div className="h-4 w-16 bg-gray-200 rounded animate-pulse"></div>
+            <div className="h-8 w-20 bg-gray-200 rounded-lg animate-pulse"></div>
           </div>
+        </div>
+        <div className="p-6">
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="border-l-4 border-l-gray-200 bg-gray-50 p-4 rounded-r-lg animate-pulse">
-                <div className="space-y-2">
+              <div key={i} className="flex items-start space-x-4 animate-pulse">
+                <div className="h-12 w-12 bg-gray-200 rounded-xl"></div>
+                <div className="flex-1 space-y-3">
                   <div className="h-4 bg-gray-200 rounded w-3/4"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                   <div className="h-3 bg-gray-200 rounded w-2/3"></div>
@@ -163,15 +156,18 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
   const totalPending = data.penilaian_tertunda.length + data.pemeriksaan_tertunda.length;
 
   return (
-    <div className="bg-white shadow rounded-lg">
-      <div className="px-4 py-5 sm:p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+      <div className="px-6 py-6 border-b border-gray-100">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <h3 className="text-xl font-bold text-gray-900 flex items-center">
+              <svg className="h-6 w-6 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
               Tindak Lanjut Tertunda
             </h3>
             {totalPending > 0 && (
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800 border border-red-200">
                 {totalPending}
               </span>
             )}
@@ -179,44 +175,48 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
           {onRefresh && (
             <button
               onClick={onRefresh}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
             >
-              <svg className="h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
               Refresh
             </button>
           )}
         </div>
+      </div>
 
+      <div className="p-6">
         {totalPending === 0 ? (
-          <div className="text-center py-8">
-            <svg
-              className="mx-auto h-12 w-12 text-gray-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Tidak ada tindak lanjut tertunda</h3>
-            <p className="mt-1 text-sm text-gray-500">
+          <div className="text-center py-12">
+            <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+              <svg
+                className="h-8 w-8 text-green-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Tidak ada tindak lanjut tertunda</h3>
+            <p className="text-gray-500 max-w-sm mx-auto">
               Semua pasien sudah mendapat tindak lanjut yang sesuai.
             </p>
           </div>
         ) : (
           <>
             {/* Tabs */}
-            <div className="border-b border-gray-200 mb-4">
+            <div className="border-b border-gray-200 mb-6">
               <nav className="-mb-px flex space-x-8">
                 <button
                   onClick={() => setActiveTab('penilaian')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === 'penilaian'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -224,14 +224,14 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
                 >
                   Penilaian Tertunda
                   {data.penilaian_tertunda.length > 0 && (
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 border border-red-200">
                       {data.penilaian_tertunda.length}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveTab('pemeriksaan')}
-                  className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`py-3 px-1 border-b-2 font-medium text-sm transition-colors ${
                     activeTab === 'pemeriksaan'
                       ? 'border-blue-500 text-blue-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -239,7 +239,7 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
                 >
                   Pemeriksaan Tertunda
                   {data.pemeriksaan_tertunda.length > 0 && (
-                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
                       {data.pemeriksaan_tertunda.length}
                     </span>
                   )}
@@ -252,7 +252,12 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
               {activeTab === 'penilaian' && (
                 <>
                   {data.penilaian_tertunda.length === 0 ? (
-                    <div className="text-center py-6">
+                    <div className="text-center py-8">
+                      <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
                       <p className="text-sm text-gray-500">Tidak ada penilaian yang tertunda</p>
                     </div>
                   ) : (
@@ -264,7 +269,12 @@ const PendingFollowUpsComponent: React.FC<PendingFollowUpsProps> = ({
               {activeTab === 'pemeriksaan' && (
                 <>
                   {data.pemeriksaan_tertunda.length === 0 ? (
-                    <div className="text-center py-6">
+                    <div className="text-center py-8">
+                      <div className="mx-auto h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center mb-3">
+                        <svg className="h-6 w-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
                       <p className="text-sm text-gray-500">Tidak ada pemeriksaan yang tertunda</p>
                     </div>
                   ) : (
