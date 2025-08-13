@@ -68,7 +68,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         {/* Overlay */}
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          className={cn(
+            "fixed inset-0 transition-opacity",
+            // Softer, not pitch-black overlay for better contrast with page
+            "bg-gray-900/40 backdrop-blur-[1px]"
+          )}
           onClick={closeOnOverlayClick ? onClose : undefined}
         />
         
@@ -76,9 +80,11 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
         <div
           ref={ref}
           className={cn(
-            "relative bg-white rounded-lg shadow-xl max-h-[90vh] overflow-hidden",
+            "relative bg-white rounded-lg shadow-xl max-h-[90vh]",
             sizeClasses[size]
           )}
+          role="dialog"
+          aria-modal="true"
         >
           {/* Header */}
           {(title || showCloseButton) && (
@@ -119,7 +125,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           )}
 
           {/* Content */}
-          <div className="p-4 overflow-y-auto max-h-[calc(90vh-8rem)]">
+          <div className="p-4 overflow-y-auto max-h-[calc(90vh-6rem)]">
             {children}
           </div>
         </div>

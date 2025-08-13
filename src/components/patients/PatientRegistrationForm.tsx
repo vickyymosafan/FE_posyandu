@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Input, Textarea } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { toast } from 'react-hot-toast';
 import { patientsApi } from '@/lib/api/patients';
@@ -95,6 +95,29 @@ export default function PatientRegistrationForm({
     // Real-time NIK validation
     if (field === 'nik' && value.length === 16) {
       checkNIKDuplication(value);
+    }
+  };
+
+  // Block non-numeric keystrokes for numeric-only inputs on mobile/desktop
+  const handleNumericKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'ArrowLeft',
+      'ArrowRight',
+      'Home',
+      'End'
+    ];
+    if (
+      allowedKeys.includes(e.key) ||
+      // Allow Ctrl/Cmd + A/C/V/X
+      (e.ctrlKey || e.metaKey)
+    ) {
+      return;
+    }
+    if (!/^[0-9]$/.test(e.key)) {
+      e.preventDefault();
     }
   };
 
@@ -209,6 +232,9 @@ export default function PatientRegistrationForm({
               helperText={errors.nama}
               placeholder="Masukkan nama lengkap pasien"
               maxLength={100}
+              autoFocus
+              required
+              autoComplete="name"
             />
           </div>
 
@@ -222,10 +248,16 @@ export default function PatientRegistrationForm({
                 const value = e.target.value.replace(/\D/g, '').slice(0, 16);
                 handleInputChange('nik', value);
               }}
+              onKeyDown={handleNumericKeyDown}
               error={!!errors.nik}
-              helperText={errors.nik || 'NIK harus 16 digit'}
+              helperText={errors.nik || `${formData.nik.length}/16 digit`}
               placeholder="1234567890123456"
               maxLength={16}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              required
+              aria-invalid={!!errors.nik}
+              autoComplete="off"
               rightIcon={isCheckingNIK ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
               ) : null}
@@ -242,10 +274,16 @@ export default function PatientRegistrationForm({
                 const value = e.target.value.replace(/\D/g, '').slice(0, 16);
                 handleInputChange('nomor_kk', value);
               }}
+              onKeyDown={handleNumericKeyDown}
               error={!!errors.nomor_kk}
-              helperText={errors.nomor_kk || 'Nomor KK harus 16 digit'}
+              helperText={errors.nomor_kk || `${formData.nomor_kk.length}/16 digit`}
               placeholder="1234567890123456"
               maxLength={16}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              required
+              aria-invalid={!!errors.nomor_kk}
+              autoComplete="off"
             />
           </div>
 
@@ -257,8 +295,11 @@ export default function PatientRegistrationForm({
               value={formData.tanggal_lahir}
               onChange={(e) => handleInputChange('tanggal_lahir', e.target.value)}
               error={!!errors.tanggal_lahir}
-              helperText={errors.tanggal_lahir}
+              helperText={errors.tanggal_lahir || 'Pilih tanggal (dd/mm/yyyy)'}
               max={new Date().toISOString().split('T')[0]}
+              required
+              aria-invalid={!!errors.tanggal_lahir}
+              autoComplete="bday"
             />
           </div>
 
@@ -272,24 +313,29 @@ export default function PatientRegistrationForm({
                 const value = e.target.value.replace(/\D/g, '').slice(0, 15);
                 handleInputChange('nomor_hp', value);
               }}
+              onKeyDown={handleNumericKeyDown}
               error={!!errors.nomor_hp}
-              helperText={errors.nomor_hp || 'Opsional, 10-15 digit'}
+              helperText={errors.nomor_hp || (formData.nomor_hp ? `${formData.nomor_hp.length} digit (opsional, 10-15)` : 'Opsional, 10-15 digit')}
               placeholder="081234567890"
               maxLength={15}
+              inputMode="numeric"
+              pattern="[0-9]*"
+              autoComplete="tel"
             />
           </div>
 
           {/* Alamat */}
           <div className="md:col-span-2">
-            <Input
+            <Textarea
               label="Alamat"
-              type="text"
               value={formData.alamat}
               onChange={(e) => handleInputChange('alamat', e.target.value)}
               error={!!errors.alamat}
-              helperText={errors.alamat}
+              helperText={errors.alamat || `${formData.alamat.length}/255`}
               placeholder="Masukkan alamat lengkap (opsional)"
               maxLength={255}
+              rows={3}
+              autoComplete="street-address"
             />
           </div>
         </div>

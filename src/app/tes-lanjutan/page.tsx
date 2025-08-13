@@ -120,7 +120,7 @@ export default function TesLanjutanPage() {
               >
                 Pilih Pasien
               </Button>
-              <Button onClick={handleNewTest}>
+              <Button onClick={handleNewTest} disabled={!selectedPatient} title={!selectedPatient ? 'Pilih pasien terlebih dahulu' : undefined}>
                 Tes Baru
               </Button>
             </div>
@@ -158,21 +158,18 @@ export default function TesLanjutanPage() {
                   refreshTrigger={refreshTrigger}
                 />
               ) : (
-                <Card className="p-8">
-                  <div className="text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    <h3 className="mt-2 text-sm font-medium text-gray-900">Pilih Pasien</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Pilih pasien untuk melihat riwayat tes lanjutan
-                    </p>
-                    <div className="mt-6">
-                      <Button onClick={() => setShowPatientSearch(true)}>
-                        Pilih Pasien
-                      </Button>
-                    </div>
+                <Card className="p-6">
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4">Pilih Pasien</h2>
+                  {/* Inline smart search with instant select */}
+                  <div className="mb-6">
+                    <PatientSearch
+                      onPatientSelect={handlePatientSelect}
+                      placeholder="Cari berdasarkan nama, NIK, atau nomor HP..."
+                      autoFocus={true}
+                      showResults={true}
+                    />
                   </div>
+                  {/* Advanced search entry removed per request */}
                 </Card>
               )}
             </div>

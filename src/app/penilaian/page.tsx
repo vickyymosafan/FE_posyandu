@@ -15,6 +15,8 @@ import { AssessmentWithDetails, AssessmentCategory } from '@/types/assessment';
 import { Patient } from '@/types/patient';
 import { formatDate, formatDateTime } from '@/lib/utils';
 import { toast } from 'react-hot-toast';
+import AuthGuard from '@/components/AuthGuard';
+import MainLayout from '@/components/Layout/MainLayout';
 
 type ViewMode = 'list' | 'form' | 'report' | 'history';
 
@@ -181,39 +183,41 @@ export default function AssessmentPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-center py-12">
-          <Loading size="lg" />
-        </div>
-      </div>
+      <AuthGuard>
+        <MainLayout>
+          <div className="flex items-center justify-center py-12">
+            <Loading size="lg" />
+          </div>
+        </MainLayout>
+      </AuthGuard>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Penilaian Kesehatan</h1>
-            <p className="text-gray-600 mt-1">
-              Kelola penilaian dan dokumentasi kesehatan pasien
-            </p>
+    <AuthGuard>
+      <MainLayout>
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Penilaian Kesehatan</h1>
+              <p className="text-gray-600 mt-1">
+                Kelola penilaian dan dokumentasi kesehatan pasien
+              </p>
+            </div>
+            
+            {viewMode === 'list' && (
+              <Button onClick={handleNewAssessment}>
+                Penilaian Baru
+              </Button>
+            )}
+            
+            {viewMode !== 'list' && (
+              <Button variant="outline" onClick={handleCancel}>
+                Kembali ke Daftar
+              </Button>
+            )}
           </div>
-          
-          {viewMode === 'list' && (
-            <Button onClick={handleNewAssessment}>
-              Penilaian Baru
-            </Button>
-          )}
-          
-          {viewMode !== 'list' && (
-            <Button variant="outline" onClick={handleCancel}>
-              Kembali ke Daftar
-            </Button>
-          )}
-        </div>
-      </div>
 
       {/* Content based on view mode */}
       {viewMode === 'list' && (
@@ -418,5 +422,7 @@ export default function AssessmentPage() {
         </div>
       </Modal>
     </div>
+      </MainLayout>
+    </AuthGuard>
   );
 }
