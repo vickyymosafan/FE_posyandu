@@ -16,7 +16,17 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "analyze": "ANALYZE=true next build",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "railway:deploy": "railway up --service frontend",
+    "railway:logs": "railway logs --service frontend",
+    "railway:shell": "railway shell frontend",
+    "railway:vars": "railway variables --service frontend",
+    "railway:status": "railway status --service frontend",
+    "railway:build": "railway run --service frontend npm run build:railway",
+    "railway:start": "railway run --service frontend npm run start:railway",
+    "railway:test": "railway run --service frontend npm run test",
+    "railway:lint": "railway run --service frontend npm run lint",
+    "railway:type-check": "railway run --service frontend npm run type-check"
   },
   "dependencies": {
     "clsx": "^2.0.0",
