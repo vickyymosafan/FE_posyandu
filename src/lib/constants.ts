@@ -1,9 +1,15 @@
-// Application constants
+// Application constants with Railway support
+import { getApiBaseUrl, getRailwayConfig } from './railway';
+
+const railwayConfig = getRailwayConfig();
 
 export const APP_CONFIG = {
   name: process.env.NEXT_PUBLIC_APP_NAME || 'Sistem Manajemen Posyandu',
   version: process.env.NEXT_PUBLIC_APP_VERSION || '1.0.0',
-  apiUrl: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  apiUrl: getApiBaseUrl(),
+  railway: railwayConfig,
+  environment: process.env.NODE_ENV || 'development',
+  buildTime: process.env.BUILD_TIME || new Date().toISOString(),
 };
 
 export const ROUTES = {

@@ -29,7 +29,8 @@ export default function PatientBarcode({ patient }: PatientBarcodeProps) {
         // Try to check if barcode exists by attempting to fetch it
         try {
           setIsLoading(true);
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+          const { getApiBaseUrl } = await import('@/lib/railway');
+          const baseUrl = getApiBaseUrl();
           const imageResponse = await fetch(`${baseUrl}/pasien/${patient.id}/barcode?format=png&download=true`, {
             credentials: 'include',
             headers: {
@@ -56,7 +57,8 @@ export default function PatientBarcode({ patient }: PatientBarcodeProps) {
 
   const loadBarcodeImage = async () => {
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const { getApiBaseUrl } = await import('@/lib/railway');
+      const baseUrl = getApiBaseUrl();
       const imageResponse = await fetch(`${baseUrl}/pasien/${patient.id}/barcode?format=png&download=true`, {
         credentials: 'include',
         headers: {
@@ -75,7 +77,8 @@ export default function PatientBarcode({ patient }: PatientBarcodeProps) {
       }
     } catch (fetchError) {
       // Fallback to direct URL if fetch fails
-      const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+      const { getApiBaseUrl } = await import('@/lib/railway');
+      const baseUrl = getApiBaseUrl();
       const barcodeImageUrl = `${baseUrl}/pasien/${patient.id}/barcode?format=png&download=true`;
       setBarcodeUrl(barcodeImageUrl);
     }

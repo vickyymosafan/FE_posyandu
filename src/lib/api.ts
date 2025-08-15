@@ -212,10 +212,24 @@ class ApiClient {
   }
 }
 
-// Create API client instance
+// Import Railway configuration
+import { getApiBaseUrl, isRailwayProduction, handleRailwayError } from './railway';
+
+// Create API client instance with Railway support
 const apiClient = new ApiClient({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
-  timeout: 10000,
+  baseURL: getApiBaseUrl(),
+  timeout: isRailwayProduction() ? 15000 : 10000, // Longer timeout for Railway production
 });
+
+// Add Railway error handling
+const originalRequest = apiClient.request.bind(apiClient);
+apiClient.request = async function<T>(config: any): Promise<T> {
+  try {
+    return await originalRequest(config);
+  } catch (error) {
+    handleRailwayError(error, `API Request: ${config.method?.toUpperCase()} ${config.url}`);
+    throw error;
+  }
+};
 
 export default apiClient;

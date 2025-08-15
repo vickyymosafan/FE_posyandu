@@ -8,10 +8,15 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:railway": "NODE_ENV=production next build",
     "start": "next start",
+    "start:railway": "NODE_ENV=production next start -p $PORT",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "analyze": "ANALYZE=true next build",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "clsx": "^2.0.0",
