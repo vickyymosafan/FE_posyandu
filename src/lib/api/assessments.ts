@@ -41,8 +41,14 @@ export const assessmentsApi = {
     const queryString = params.toString();
     const url = queryString ? `/penilaian?${queryString}` : '/penilaian';
     
-    const response = await apiClient.get<AssessmentWithDetails[]>(url);
-    return response.data!;
+    const response = await apiClient.get<AssessmentWithDetails[] | any[]>(url);
+    const raw = response.data || [];
+    // Normalize field naming from backend: some endpoints use `dinilai_oleh_nama`
+    const normalized = (raw as any[]).map((item) => ({
+      ...item,
+      admin_nama: item.admin_nama ?? item.dinilai_oleh_nama ?? item.diperiksa_oleh_nama ?? '',
+    })) as AssessmentWithDetails[];
+    return normalized;
   },
 
   /**
@@ -82,7 +88,12 @@ export const assessmentsApi = {
   getPatientAssessments: async (patientId: number | string): Promise<AssessmentWithDetails[]> => {
     const response = await apiClient.get<any>(`/pasien/${patientId}/penilaian`);
     // The backend returns data in nested structure: { data: { penilaian: [...] } }
-    return response.data?.penilaian || [];
+    const arr = response.data?.penilaian || [];
+    const normalized = (arr as any[]).map((item) => ({
+      ...item,
+      admin_nama: item.admin_nama ?? item.dinilai_oleh_nama ?? item.diperiksa_oleh_nama ?? '',
+    })) as AssessmentWithDetails[];
+    return normalized;
   },
 
   /**

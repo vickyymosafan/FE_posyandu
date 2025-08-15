@@ -13,6 +13,8 @@ export interface ModalProps {
   showCloseButton?: boolean;
   closeOnOverlayClick?: boolean;
   closeOnEscape?: boolean;
+  // Control content overflow behavior. Default keeps scroll inside modal; use 'visible' to allow dropdowns to escape.
+  contentOverflow?: "auto" | "visible";
 }
 
 const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
@@ -26,6 +28,7 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
     showCloseButton = true,
     closeOnOverlayClick = true,
     closeOnEscape = true,
+    contentOverflow = "auto",
   }, ref) => {
     // Handle escape key
     React.useEffect(() => {
@@ -125,7 +128,10 @@ const Modal = React.forwardRef<HTMLDivElement, ModalProps>(
           )}
 
           {/* Content */}
-          <div className="p-4 overflow-y-auto max-h-[calc(90vh-6rem)]">
+          <div className={cn(
+            "p-4 max-h-[calc(90vh-6rem)]",
+            contentOverflow === "visible" ? "overflow-visible" : "overflow-y-auto"
+          )}>
             {children}
           </div>
         </div>

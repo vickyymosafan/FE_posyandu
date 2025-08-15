@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -15,12 +15,7 @@ interface TestHistoryProps {
   refreshTrigger?: number;
 }
 
-interface TrendData {
-  tests: AdvancedTest[];
-  trend: 'increasing' | 'decreasing' | 'stable';
-  average: number;
-  latest: number | null;
-}
+// Removed trend analysis to focus on clear, simple information for Posyandu
 
 interface DateFilters {
   startDate: string;
@@ -33,7 +28,6 @@ export default function TestHistory({
   refreshTrigger = 0 
 }: TestHistoryProps) {
   const [tests, setTests] = useState<AdvancedTest[]>([]);
-  const [trendData, setTrendData] = useState<TrendData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<DateFilters>({
@@ -65,11 +59,8 @@ export default function TestHistory({
         filters.endDate || undefined
       );
 
-      // Fetch trend data (last 30 days)
-      const trend = await advancedTestsApi.getGlucoseTrend(patient.id, 30);
-
       setTests(filteredTests);
-      setTrendData(trend);
+      
     } catch (err: any) {
       console.error('Error fetching test history:', err);
       setError('Gagal memuat riwayat tes');
@@ -114,28 +105,19 @@ export default function TestHistory({
     }
   };
 
-  const getTrendIcon = (trend: string) => {
-    switch (trend) {
-      case 'increasing':
-        return (
-          <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        );
-      case 'decreasing':
-        return (
-          <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
-          </svg>
-        );
-      default:
-        return (
-          <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
-          </svg>
-        );
+  // Simple status summary counts for clarity
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = { Rendah: 0, Normal: 0, Prediabetes: 0, Diabetes: 0 };
+    for (const t of tests) {
+      const raw = (t as any).gula_darah;
+      const glucose = raw === null || raw === undefined ? NaN : Number(raw);
+      if (Number.isFinite(glucose)) {
+        const { status } = getGlucoseStatus(glucose);
+        counts[status] = (counts[status] ?? 0) + 1;
+      }
     }
-  };
+    return counts;
+  }, [tests]);
 
   const formatDate = (dateString: string): string => {
     return new Date(dateString).toLocaleDateString('id-ID', {
@@ -159,86 +141,6 @@ export default function TestHistory({
 
   return (
     <div className="space-y-6">
-      {/* Trend Summary */}
-      {trendData && (
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Analisis Tren (30 Hari Terakhir)
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="flex items-center justify-center mb-2">
-                {getTrendIcon(trendData.trend)}
-              </div>
-              <p className="text-sm text-gray-600">Tren</p>
-              <p className="font-semibold capitalize">
-                {trendData.trend === 'increasing' ? 'Meningkat' : 
-                 trendData.trend === 'decreasing' ? 'Menurun' : 'Stabil'}
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">
-                {trendData.latest && typeof trendData.latest === 'number' ? trendData.latest.toFixed(2) : '-'}
-              </p>
-              <p className="text-sm text-gray-600">Terakhir (mg/dL)</p>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">
-                {isNaN(trendData.average) ? '-' : trendData.average}
-              </p>
-              <p className="text-sm text-gray-600">Rata-rata (mg/dL)</p>
-            </div>
-            
-            <div className="text-center">
-              <p className="text-2xl font-bold text-gray-900">
-                {trendData.tests.length}
-              </p>
-              <p className="text-sm text-gray-600">Total Tes</p>
-            </div>
-          </div>
-
-          {/* Simple Chart Visualization */}
-          {trendData.tests.length > 1 && (
-            <div className="mt-6">
-              <h4 className="text-sm font-medium text-gray-900 mb-3">Grafik Tren Gula Darah</h4>
-              <div className="relative h-32 bg-gray-50 rounded-lg p-4">
-                <div className="flex items-end justify-between h-full">
-                  {trendData.tests.slice(0, 10).reverse().map((test, index) => {
-                    const glucose = test.gula_darah || 0;
-                    const maxGlucose = Math.max(...trendData.tests.map(t => t.gula_darah || 0));
-                    const height = maxGlucose > 0 ? Math.max((glucose / maxGlucose) * 100, 10) : 10;
-                    const status = getGlucoseStatus(glucose);
-                    
-                    return (
-                      <div key={test.id} className="flex flex-col items-center">
-                        <div
-                          className={`w-6 rounded-t ${status.color.split(' ')[1]} transition-all duration-300`}
-                          style={{ height: `${height}%` }}
-                          title={`${glucose} mg/dL - ${formatDate(test.tanggal_tes)}`}
-                        />
-                        <span className="text-xs text-gray-500 mt-1 transform -rotate-45 origin-left">
-                          {new Date(test.tanggal_tes).getDate()}/{new Date(test.tanggal_tes).getMonth() + 1}
-                        </span>
-                      </div>
-                    );
-                  })}
-                </div>
-                
-                {/* Reference lines */}
-                <div className="absolute inset-x-4 top-1/4 border-t border-red-200 border-dashed">
-                  <span className="text-xs text-red-500 bg-white px-1">200 mg/dL</span>
-                </div>
-                <div className="absolute inset-x-4 top-1/2 border-t border-yellow-200 border-dashed">
-                  <span className="text-xs text-yellow-600 bg-white px-1">140 mg/dL</span>
-                </div>
-              </div>
-            </div>
-          )}
-        </Card>
-      )}
 
       {/* Filters */}
       <Card className="p-6">
@@ -280,10 +182,31 @@ export default function TestHistory({
           <h3 className="text-lg font-semibold text-gray-900">
             Riwayat Tes Lanjutan
           </h3>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-600">
             {tests.length} tes ditemukan
           </span>
         </div>
+
+        {tests.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+            <div className="flex items-center justify-between px-3 py-2 rounded bg-blue-50 text-blue-800 text-xs">
+              <span>Rendah</span>
+              <span className="font-semibold">{statusCounts['Rendah']}</span>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 rounded bg-green-50 text-green-800 text-xs">
+              <span>Normal</span>
+              <span className="font-semibold">{statusCounts['Normal']}</span>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 rounded bg-yellow-50 text-yellow-800 text-xs">
+              <span>Prediabetes</span>
+              <span className="font-semibold">{statusCounts['Prediabetes']}</span>
+            </div>
+            <div className="flex items-center justify-between px-3 py-2 rounded bg-red-50 text-red-800 text-xs">
+              <span>Diabetes</span>
+              <span className="font-semibold">{statusCounts['Diabetes']}</span>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
@@ -304,7 +227,8 @@ export default function TestHistory({
         ) : (
           <div className="space-y-4">
             {tests.map((test) => {
-              const glucoseStatus = test.gula_darah ? getGlucoseStatus(test.gula_darah) : null;
+              const glucoseValue = Number((test as any).gula_darah);
+              const glucoseStatus = Number.isFinite(glucoseValue) ? getGlucoseStatus(glucoseValue) : null;
               
               return (
                 <div
@@ -319,8 +243,8 @@ export default function TestHistory({
                             {formatDate(test.tanggal_tes)}
                           </p>
                           <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-lg font-semibold text-gray-900">
-                              {test.gula_darah || '-'} mg/dL
+                            <span className="text-2xl font-bold text-gray-900">
+                              {Number.isFinite(glucoseValue) ? glucoseValue : '-'} mg/dL
                             </span>
                             {glucoseStatus && (
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${glucoseStatus.color}`}>

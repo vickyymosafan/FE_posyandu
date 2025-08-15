@@ -63,10 +63,24 @@ export default function HealthAssessmentForm({
   onSuccess, 
   onCancel 
 }: HealthAssessmentFormProps) {
+  const CATEGORY_TEMPLATES: Record<AssessmentCategory, { temuan: string; rekomendasi: string }> = {
+    normal: {
+      temuan: 'Pemeriksaan dalam batas normal. Tanda vital dan hasil tes sesuai rentang referensi.',
+      rekomendasi: 'Lanjutkan gaya hidup sehat, olahraga teratur, pola makan seimbang, dan lakukan pemeriksaan rutin.'
+    },
+    perlu_perhatian: {
+      temuan: 'Ditemukan kondisi yang memerlukan perhatian/monitoring. Perlu observasi lebih lanjut.',
+      rekomendasi: 'Lakukan monitoring berkala, edukasi gaya hidup sehat, dan jadwalkan kontrol sesuai kebutuhan.'
+    },
+    rujukan: {
+      temuan: 'Ditemukan kondisi yang memerlukan evaluasi lanjutan/rujukan.',
+      rekomendasi: 'Rujuk ke fasilitas kesehatan lanjutan untuk pemeriksaan dan penanganan lebih lanjut.'
+    }
+  };
   const [formData, setFormData] = useState<FormData>({
-    kategori_penilaian: 'normal',
-    temuan: '',
-    rekomendasi: '',
+    kategori_penilaian: assessment?.kategori_penilaian || 'normal',
+    temuan: assessment?.temuan ?? CATEGORY_TEMPLATES.normal.temuan,
+    rekomendasi: assessment?.rekomendasi ?? CATEGORY_TEMPLATES.normal.rekomendasi,
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
@@ -239,6 +253,25 @@ export default function HealthAssessmentForm({
     }
   };
 
+  const handleCategoryChange = (value: AssessmentCategory) => {
+    // On new assessment, synchronize temuan & rekomendasi with selected category template
+    if (!assessment) {
+      const tpl = CATEGORY_TEMPLATES[value];
+      setFormData(prev => ({
+        ...prev,
+        kategori_penilaian: value,
+        temuan: tpl.temuan,
+        rekomendasi: tpl.rekomendasi,
+      }));
+    } else {
+      // For edit mode, only change category
+      setFormData(prev => ({ ...prev, kategori_penilaian: value }));
+    }
+    if (errors.kategori_penilaian) {
+      setErrors(prev => ({ ...prev, kategori_penilaian: undefined }));
+    }
+  };
+
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
@@ -396,7 +429,7 @@ export default function HealthAssessmentForm({
                   name="kategori_penilaian"
                   value={option.value}
                   checked={formData.kategori_penilaian === option.value}
-                  onChange={(e) => handleInputChange('kategori_penilaian', e.target.value as AssessmentCategory)}
+                  onChange={(e) => handleCategoryChange(e.target.value as AssessmentCategory)}
                   className="mt-1 mr-3"
                 />
                 <div>

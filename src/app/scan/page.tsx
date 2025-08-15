@@ -9,11 +9,22 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Patient } from '@/types/patient';
 import toast from 'react-hot-toast';
+import { examinationsApi } from '@/lib/api/examinations';
+import { assessmentsApi } from '@/lib/api/assessments';
+import { treatmentsApi } from '@/lib/api/treatments';
+import { PhysicalExamination, AdvancedTest } from '@/types/examination';
+import { AssessmentWithDetails } from '@/types/assessment';
+import { TreatmentWithDetails } from '@/types/treatment';
 
 export default function ScanPage() {
   const router = useRouter();
   const [foundPatient, setFoundPatient] = useState<Patient | null>(null);
   const [scanError, setScanError] = useState<string | null>(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [examinations, setExaminations] = useState<PhysicalExamination[]>([]);
+  const [advancedTests, setAdvancedTests] = useState<AdvancedTest[]>([]);
+  const [assessments, setAssessments] = useState<AssessmentWithDetails[]>([]);
+  const [treatments, setTreatments] = useState<TreatmentWithDetails[]>([]);
 
   const handlePatientFound = (patient: Patient) => {
     setFoundPatient(patient);
@@ -34,6 +45,10 @@ export default function ScanPage() {
   const startNewScan = () => {
     setFoundPatient(null);
     setScanError(null);
+    setExaminations([]);
+    setAdvancedTests([]);
+    setAssessments([]);
+    setTreatments([]);
   };
 
   const calculateAge = (birthDate: string): number => {
@@ -48,6 +63,32 @@ export default function ScanPage() {
     
     return age;
   };
+
+  // Load all patient details once a patient is found
+  React.useEffect(() => {
+    const loadDetails = async () => {
+      if (!foundPatient) return;
+      try {
+        setIsLoadingDetails(true);
+        const [exams, adv, asses, meds] = await Promise.all([
+          examinationsApi.getPatientExaminations(foundPatient.id),
+          examinationsApi.getPatientAdvancedTests(foundPatient.id),
+          assessmentsApi.getPatientAssessments(foundPatient.id),
+          treatmentsApi.getTreatmentsByPatient(foundPatient.id)
+        ]);
+        setExaminations(exams);
+        setAdvancedTests(adv);
+        setAssessments(asses);
+        setTreatments(meds);
+      } catch (e) {
+        console.error('Error loading patient details:', e);
+        toast.error('Gagal memuat detail pasien');
+      } finally {
+        setIsLoadingDetails(false);
+      }
+    };
+    loadDetails();
+  }, [foundPatient?.id]);
 
   return (
     <AuthGuard>
@@ -127,6 +168,148 @@ export default function ScanPage() {
                             day: 'numeric'
                           })}
                         </p>
+                      </div>
+                    </div>
+
+                    {/* All Details */}
+                    <div className="grid grid-cols-1 gap-6 pt-4 border-t">
+                      {/* Pemeriksaan Fisik */}
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-900 mb-2">
+                          Pemeriksaan Fisik ({examinations.length})
+                        </h4>
+                        {isLoadingDetails ? (
+                          <div className="text-sm text-gray-500">Memuat...</div>
+                        ) : examinations.length === 0 ? (
+                          <div className="text-sm text-gray-500">Belum ada riwayat pemeriksaan.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {examinations.slice(0, 5).map((exam) => (
+                              <div key={exam.id} className="border border-gray-200 rounded-lg p-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <div className="font-medium text-gray-900">
+                                    {new Date(exam.tanggal_pemeriksaan).toLocaleString('id-ID')}
+                                  </div>
+                                  {(exam.tekanan_darah_sistolik && exam.tekanan_darah_diastolik) && (
+                                    <div className="text-xs text-gray-600">
+                                      TD {exam.tekanan_darah_sistolik}/{exam.tekanan_darah_diastolik} mmHg
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 mt-2 text-xs text-gray-700">
+                                  {exam.tinggi_badan && <div>Tinggi: {exam.tinggi_badan} cm</div>}
+                                  {exam.berat_badan && <div>Berat: {exam.berat_badan} kg</div>}
+                                  {exam.lingkar_perut && <div>Lingkar Perut: {exam.lingkar_perut} cm</div>}
+                                </div>
+                                {exam.catatan && (
+                                  <div className="mt-2 text-xs text-gray-600">Catatan: {exam.catatan}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Tes Lanjutan */}
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-900 mb-2">
+                          Tes Lanjutan ({advancedTests.length})
+                        </h4>
+                        {isLoadingDetails ? (
+                          <div className="text-sm text-gray-500">Memuat...</div>
+                        ) : advancedTests.length === 0 ? (
+                          <div className="text-sm text-gray-500">Belum ada riwayat tes lanjutan.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {advancedTests.slice(0, 5).map((test) => (
+                              <div key={test.id} className="border border-gray-200 rounded-lg p-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <div className="font-medium text-gray-900">
+                                    {new Date(test.tanggal_tes).toLocaleString('id-ID')}
+                                  </div>
+                                  {typeof test.gula_darah === 'number' && (
+                                    <div className="text-xs text-gray-600">Gula Darah: {test.gula_darah} mg/dL</div>
+                                  )}
+                                </div>
+                                {test.catatan && (
+                                  <div className="mt-2 text-xs text-gray-600">Catatan: {test.catatan}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Penilaian Kesehatan */}
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-900 mb-2">
+                          Penilaian Kesehatan ({assessments.length})
+                        </h4>
+                        {isLoadingDetails ? (
+                          <div className="text-sm text-gray-500">Memuat...</div>
+                        ) : assessments.length === 0 ? (
+                          <div className="text-sm text-gray-500">Belum ada riwayat penilaian.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {assessments.slice(0, 5).map((a) => (
+                              <div key={a.id} className="border border-gray-200 rounded-lg p-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <div className="font-medium text-gray-900">
+                                    {new Date(a.tanggal_penilaian).toLocaleString('id-ID')}
+                                  </div>
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    a.kategori_penilaian === 'normal' ? 'bg-green-100 text-green-700' :
+                                    a.kategori_penilaian === 'perlu_perhatian' ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}>
+                                    {a.kategori_penilaian === 'normal' ? 'Normal' : a.kategori_penilaian === 'perlu_perhatian' ? 'Perlu Perhatian' : 'Rujukan'}
+                                  </span>
+                                </div>
+                                {a.temuan && (
+                                  <div className="mt-2 text-xs text-gray-600 line-clamp-2">Temuan: {a.temuan}</div>
+                                )}
+                                {a.rekomendasi && (
+                                  <div className="mt-1 text-xs text-gray-600 line-clamp-2">Rekomendasi: {a.rekomendasi}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Pengobatan */}
+                      <div>
+                        <h4 className="text-md font-semibold text-gray-900 mb-2">
+                          Pengobatan ({treatments.length})
+                        </h4>
+                        {isLoadingDetails ? (
+                          <div className="text-sm text-gray-500">Memuat...</div>
+                        ) : treatments.length === 0 ? (
+                          <div className="text-sm text-gray-500">Belum ada riwayat pengobatan.</div>
+                        ) : (
+                          <div className="space-y-2">
+                            {treatments.slice(0, 5).map((t) => (
+                              <div key={t.id} className="border border-gray-200 rounded-lg p-3">
+                                <div className="flex items-center justify-between text-sm">
+                                  <div className="font-medium text-gray-900">
+                                    {t.nama_obat || 'Obat tidak disebutkan'}
+                                  </div>
+                                  <div className="text-xs text-gray-600">
+                                    {new Date(t.tanggal_resep).toLocaleString('id-ID')}
+                                  </div>
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 mt-2 text-xs text-gray-700">
+                                  <div>Dosis: {t.dosis || '-'}</div>
+                                  <div>Frekuensi: {t.frekuensi || '-'}</div>
+                                  <div>Durasi: {t.durasi || '-'}</div>
+                                </div>
+                                {t.instruksi && (
+                                  <div className="mt-2 text-xs text-gray-600 line-clamp-2">Instruksi: {t.instruksi}</div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 

@@ -254,7 +254,7 @@ export default function PhysicalExamForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Anthropometric Measurements */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Pengukuran Antropometri</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Pengukuran / Penimbangan</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Input
               label="Tinggi Badan (cm)"
@@ -309,9 +309,9 @@ export default function PhysicalExamForm({
           )}
         </div>
 
-        {/* Vital Signs */}
+        {/* Blood Pressure */}
         <div>
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Tanda Vital</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Tensi Darah</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Tekanan Darah Sistolik (mmHg)"

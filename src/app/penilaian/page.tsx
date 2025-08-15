@@ -61,6 +61,9 @@ export default function AssessmentPage() {
   const [assessments, setAssessments] = useState<AssessmentWithDetails[]>([]);
   const [filteredAssessments, setFilteredAssessments] = useState<AssessmentWithDetails[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
+  const [patientResults, setPatientResults] = useState<Patient[]>([]);
+  const [patientSearch, setPatientSearch] = useState('');
+  const [isSearchingPatients, setIsSearchingPatients] = useState(false);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentWithDetails | null>(null);
   const [historyPatientId, setHistoryPatientId] = useState<number | null>(null);
@@ -76,6 +79,34 @@ export default function AssessmentPage() {
   useEffect(() => {
     applyFilters();
   }, [assessments, filters]);
+
+  // Dynamic patient search inside modal (debounced)
+  useEffect(() => {
+    if (!showPatientModal) return;
+    let active = true;
+    const fetchPatients = async () => {
+      try {
+        setIsSearchingPatients(true);
+        const hasQuery = patientSearch.trim().length > 0;
+        const params = hasQuery
+          ? { query: patientSearch.trim(), limit: 20 }
+          : { page: 1, limit: 20 };
+        const resp = await patientsApi.getPatients(params);
+        if (!active) return;
+        setPatientResults(resp.data.pasien);
+      } catch (_e) {
+        if (!active) return;
+        setPatientResults([]);
+      } finally {
+        if (active) setIsSearchingPatients(false);
+      }
+    };
+    const handle = setTimeout(fetchPatients, 300);
+    return () => {
+      active = false;
+      clearTimeout(handle);
+    };
+  }, [showPatientModal, patientSearch]);
 
   const loadInitialData = async () => {
     try {
@@ -143,6 +174,8 @@ export default function AssessmentPage() {
   const handleNewAssessment = () => {
     setSelectedAssessment(null);
     setShowPatientModal(true);
+    setPatientSearch('');
+    setPatientResults([]);
   };
 
   const handleSelectPatient = (patient: Patient) => {
@@ -151,12 +184,44 @@ export default function AssessmentPage() {
     setViewMode('form');
   };
 
-  const handleEditAssessment = (assessment: AssessmentWithDetails) => {
-    const patient = patients.find(p => p.id === assessment.id_pasien);
-    if (patient) {
-      setSelectedPatient(patient);
-      setSelectedAssessment(assessment);
-      setViewMode('form');
+  const handleEditAssessment = async (assessment: AssessmentWithDetails) => {
+    try {
+      let patient: Patient | undefined;
+      // Case 1: id_pasien is numeric id
+      if (typeof assessment.id_pasien === 'number') {
+        patient = patients.find(p => p.id === assessment.id_pasien);
+      }
+      // Case 2: id_pasien is code string → try local cache by code or name
+      if (!patient) {
+        patient = patients.find(
+          p => p.id_pasien === String(assessment.id_pasien) || p.nama === assessment.nama_pasien
+        );
+      }
+      // Case 3: fallback to API search by code then by name
+      if (!patient) {
+        try {
+          const respByCode = await patientsApi.getPatients({ query: String(assessment.id_pasien), limit: 1 });
+          patient = respByCode.data.pasien.find(
+            p => p.id_pasien === String(assessment.id_pasien) || p.nama === assessment.nama_pasien
+          );
+        } catch {}
+      }
+      if (!patient && assessment.nama_pasien) {
+        try {
+          const respByName = await patientsApi.getPatients({ query: assessment.nama_pasien, limit: 1 });
+          patient = respByName.data.pasien[0];
+        } catch {}
+      }
+
+      if (patient) {
+        setSelectedPatient(patient);
+        setSelectedAssessment(assessment);
+        setViewMode('form');
+      } else {
+        toast.error('Tidak dapat menemukan pasien untuk penilaian ini');
+      }
+    } catch (e) {
+      toast.error('Gagal membuka formulir edit');
     }
   };
 
@@ -422,38 +487,39 @@ export default function AssessmentPage() {
       >
         <div className="space-y-4">
           <Input
-            placeholder="Cari nama pasien..."
-            value={filters.search || ''}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
+            placeholder="Cari nama / NIK / ID pasien..."
+            value={patientSearch}
+            onChange={(e) => setPatientSearch(e.target.value)}
           />
-          
+
           <div className="max-h-96 overflow-y-auto space-y-2">
-            {patients
-              .filter(patient => 
-                !filters.search || 
-                patient.nama.toLowerCase().includes(filters.search.toLowerCase()) ||
-                patient.nik.includes(filters.search) ||
-                patient.id_pasien.includes(filters.search)
-              )
-              .map((patient) => (
-                <div
-                  key={patient.id}
-                  className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
-                  onClick={() => handleSelectPatient(patient)}
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h4 className="font-medium text-gray-900">{patient.nama}</h4>
-                      <p className="text-sm text-gray-600">
-                        ID: {patient.id_pasien} | NIK: {patient.nik}
-                      </p>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      Pilih
-                    </Button>
+            {isSearchingPatients && (
+              <div className="p-3 text-sm text-gray-500">Mencari pasien...</div>
+            )}
+            {!isSearchingPatients && patientResults.length === 0 && (
+              <div className="p-3 text-sm text-gray-500">
+                {patientSearch.trim() ? 'Tidak ada pasien ditemukan' : 'Belum ada data pasien'}
+              </div>
+            )}
+            {patientResults.map((patient) => (
+              <div
+                key={patient.id}
+                className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                onClick={() => handleSelectPatient(patient)}
+              >
+                <div className="flex justify-between items-center">
+                  <div>
+                    <h4 className="font-medium text-gray-900">{patient.nama}</h4>
+                    <p className="text-sm text-gray-600">
+                      ID: {patient.id_pasien} | NIK: {patient.nik}
+                    </p>
                   </div>
+                  <Button variant="ghost" size="sm">
+                    Pilih
+                  </Button>
                 </div>
-              ))}
+              </div>
+            ))}
           </div>
         </div>
       </Modal>
