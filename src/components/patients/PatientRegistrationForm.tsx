@@ -4,6 +4,12 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input, Textarea } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { 
+  ResponsiveForm, 
+  ResponsiveFormField, 
+  ResponsiveFormSection, 
+  ResponsiveFormActions 
+} from '@/components/ui/ResponsiveForm';
 import { toast } from 'react-hot-toast';
 import { patientsApi } from '@/lib/api/patients';
 import { PatientRegistrationData } from '@/types/patient';
@@ -219,161 +225,189 @@ export default function PatientRegistrationForm({
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Nama Lengkap */}
-          <div className="md:col-span-2">
-            <Input
-              label="Nama Lengkap *"
-              type="text"
-              value={formData.nama}
-              onChange={(e) => handleInputChange('nama', e.target.value)}
-              error={!!errors.nama}
-              helperText={errors.nama}
-              placeholder="Masukkan nama lengkap pasien"
-              maxLength={100}
-              autoFocus
-              required
-              autoComplete="name"
-            />
-          </div>
+      <ResponsiveForm onSubmit={handleSubmit} layout="adaptive">
+        {/* Section: Data Identitas */}
+        <ResponsiveFormSection
+          title="Data Identitas"
+          description="Informasi identitas pasien yang wajib diisi"
+          className="col-span-full"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Nama Lengkap - Full width */}
+            <ResponsiveFormField fullWidth>
+              <Input
+                label="Nama Lengkap *"
+                type="text"
+                value={formData.nama}
+                onChange={(e) => handleInputChange('nama', e.target.value)}
+                error={!!errors.nama}
+                helperText={errors.nama}
+                placeholder="Masukkan nama lengkap pasien"
+                maxLength={100}
+                autoFocus
+                required
+                autoComplete="name"
+                responsive
+              />
+            </ResponsiveFormField>
 
-          {/* NIK */}
-          <div>
-            <Input
-              label="NIK (Nomor Induk Kependudukan) *"
-              type="text"
-              value={formData.nik}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                handleInputChange('nik', value);
-              }}
-              onKeyDown={handleNumericKeyDown}
-              error={!!errors.nik}
-              helperText={errors.nik || `${formData.nik.length}/16 digit`}
-              placeholder="1234567890123456"
-              maxLength={16}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              required
-              aria-invalid={!!errors.nik}
-              autoComplete="off"
-              rightIcon={isCheckingNIK ? (
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-              ) : null}
-            />
-          </div>
+            {/* NIK dan Nomor KK - Side by side on tablet/desktop */}
+            <ResponsiveFormField>
+              <Input
+                label="NIK (Nomor Induk Kependudukan) *"
+                type="text"
+                value={formData.nik}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                  handleInputChange('nik', value);
+                }}
+                onKeyDown={handleNumericKeyDown}
+                error={!!errors.nik}
+                helperText={errors.nik || `${formData.nik.length}/16 digit`}
+                placeholder="1234567890123456"
+                maxLength={16}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                aria-invalid={!!errors.nik}
+                autoComplete="off"
+                responsive
+                rightIcon={isCheckingNIK ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                ) : null}
+              />
+            </ResponsiveFormField>
 
-          {/* Nomor KK */}
-          <div>
-            <Input
-              label="Nomor Kartu Keluarga *"
-              type="text"
-              value={formData.nomor_kk}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                handleInputChange('nomor_kk', value);
-              }}
-              onKeyDown={handleNumericKeyDown}
-              error={!!errors.nomor_kk}
-              helperText={errors.nomor_kk || `${formData.nomor_kk.length}/16 digit`}
-              placeholder="1234567890123456"
-              maxLength={16}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              required
-              aria-invalid={!!errors.nomor_kk}
-              autoComplete="off"
-            />
-          </div>
+            <ResponsiveFormField>
+              <Input
+                label="Nomor Kartu Keluarga *"
+                type="text"
+                value={formData.nomor_kk}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 16);
+                  handleInputChange('nomor_kk', value);
+                }}
+                onKeyDown={handleNumericKeyDown}
+                error={!!errors.nomor_kk}
+                helperText={errors.nomor_kk || `${formData.nomor_kk.length}/16 digit`}
+                placeholder="1234567890123456"
+                maxLength={16}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                required
+                aria-invalid={!!errors.nomor_kk}
+                autoComplete="off"
+                responsive
+              />
+            </ResponsiveFormField>
 
-          {/* Tanggal Lahir */}
-          <div>
-            <Input
-              label="Tanggal Lahir *"
-              type="date"
-              value={formData.tanggal_lahir}
-              onChange={(e) => handleInputChange('tanggal_lahir', e.target.value)}
-              error={!!errors.tanggal_lahir}
-              helperText={errors.tanggal_lahir || 'Pilih tanggal (dd/mm/yyyy)'}
-              max={new Date().toISOString().split('T')[0]}
-              required
-              aria-invalid={!!errors.tanggal_lahir}
-              autoComplete="bday"
-            />
+            {/* Tanggal Lahir */}
+            <ResponsiveFormField>
+              <Input
+                label="Tanggal Lahir *"
+                type="date"
+                value={formData.tanggal_lahir}
+                onChange={(e) => handleInputChange('tanggal_lahir', e.target.value)}
+                error={!!errors.tanggal_lahir}
+                helperText={errors.tanggal_lahir || 'Pilih tanggal (dd/mm/yyyy)'}
+                max={new Date().toISOString().split('T')[0]}
+                required
+                aria-invalid={!!errors.tanggal_lahir}
+                autoComplete="bday"
+                responsive
+              />
+            </ResponsiveFormField>
           </div>
+        </ResponsiveFormSection>
 
-          {/* Nomor HP */}
-          <div>
-            <Input
-              label="Nomor HP"
-              type="text"
-              value={formData.nomor_hp}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\D/g, '').slice(0, 15);
-                handleInputChange('nomor_hp', value);
-              }}
-              onKeyDown={handleNumericKeyDown}
-              error={!!errors.nomor_hp}
-              helperText={errors.nomor_hp || (formData.nomor_hp ? `${formData.nomor_hp.length} digit (opsional, 10-15)` : 'Opsional, 10-15 digit')}
-              placeholder="081234567890"
-              maxLength={15}
-              inputMode="numeric"
-              pattern="[0-9]*"
-              autoComplete="tel"
-            />
-          </div>
+        {/* Section: Informasi Kontak */}
+        <ResponsiveFormSection
+          title="Informasi Kontak"
+          description="Data kontak dan alamat (opsional)"
+          className="col-span-full"
+          collapsible
+          defaultExpanded={true}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* Nomor HP */}
+            <ResponsiveFormField>
+              <Input
+                label="Nomor HP"
+                type="text"
+                value={formData.nomor_hp}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, '').slice(0, 15);
+                  handleInputChange('nomor_hp', value);
+                }}
+                onKeyDown={handleNumericKeyDown}
+                error={!!errors.nomor_hp}
+                helperText={errors.nomor_hp || (formData.nomor_hp ? `${formData.nomor_hp.length} digit (opsional, 10-15)` : 'Opsional, 10-15 digit')}
+                placeholder="081234567890"
+                maxLength={15}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                autoComplete="tel"
+                responsive
+              />
+            </ResponsiveFormField>
 
-          {/* Alamat */}
-          <div className="md:col-span-2">
-            <Textarea
-              label="Alamat"
-              value={formData.alamat}
-              onChange={(e) => handleInputChange('alamat', e.target.value)}
-              error={!!errors.alamat}
-              helperText={errors.alamat || `${formData.alamat.length}/255`}
-              placeholder="Masukkan alamat lengkap (opsional)"
-              maxLength={255}
-              rows={3}
-              autoComplete="street-address"
-            />
+            {/* Alamat - Full width */}
+            <ResponsiveFormField fullWidth>
+              <Textarea
+                label="Alamat"
+                value={formData.alamat}
+                onChange={(e) => handleInputChange('alamat', e.target.value)}
+                error={!!errors.alamat}
+                helperText={errors.alamat || `${formData.alamat.length}/255`}
+                placeholder="Masukkan alamat lengkap (opsional)"
+                maxLength={255}
+                rows={3}
+                autoComplete="street-address"
+                responsive
+              />
+            </ResponsiveFormField>
           </div>
-        </div>
+        </ResponsiveFormSection>
 
         {/* Form Actions */}
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
-          <Button
-            type="submit"
-            loading={isSubmitting}
-            disabled={isSubmitting || isCheckingNIK}
-            className="sm:order-2"
-          >
-            {isSubmitting ? 'Mendaftarkan...' : 'Daftarkan Pasien'}
-          </Button>
-          
+        <ResponsiveFormActions 
+          className="col-span-full"
+          alignment="space-between"
+        >
           <Button
             type="button"
             variant="outline"
             onClick={handleReset}
             disabled={isSubmitting}
-            className="sm:order-1"
+            responsive
           >
             Reset Form
           </Button>
           
-          {onCancel && (
+          <div className="flex gap-3">
+            {onCancel && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onCancel}
+                disabled={isSubmitting}
+                responsive
+              >
+                Batal
+              </Button>
+            )}
+            
             <Button
-              type="button"
-              variant="ghost"
-              onClick={onCancel}
-              disabled={isSubmitting}
-              className="sm:order-3"
+              type="submit"
+              loading={isSubmitting}
+              disabled={isSubmitting || isCheckingNIK}
+              responsive
             >
-              Batal
+              {isSubmitting ? 'Mendaftarkan...' : 'Daftarkan Pasien'}
             </Button>
-          )}
-        </div>
-      </form>
+          </div>
+        </ResponsiveFormActions>
+      </ResponsiveForm>
     </Card>
   );
 }

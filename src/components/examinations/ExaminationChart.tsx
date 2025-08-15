@@ -1,10 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Card } from '@/components/ui/card';
 import { PhysicalExamination } from '@/types/examination';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import ResponsiveChart, { ChartDataPoint } from '@/components/ui/ResponsiveChart';
 
 interface ExaminationChartProps {
   examinations: PhysicalExamination[];
@@ -34,19 +34,8 @@ export default function ExaminationChart({
     })
     .sort((a, b) => new Date(a.tanggal_pemeriksaan).getTime() - new Date(b.tanggal_pemeriksaan).getTime());
 
-  if (sortedExaminations.length === 0) {
-    return (
-      <Card className="p-4">
-        <h4 className="font-medium text-gray-900 mb-2">{title}</h4>
-        <div className="text-center py-8 text-gray-500">
-          Tidak ada data untuk ditampilkan
-        </div>
-      </Card>
-    );
-  }
-
-  // Calculate values for chart
-  const chartData = sortedExaminations.map(exam => {
+  // Convert examinations to chart data format
+  const chartData: ChartDataPoint[] = sortedExaminations.map(exam => {
     let value: number | null = null;
     let secondaryValue: number | null = null;
 
@@ -70,50 +59,13 @@ export default function ExaminationChart({
 
     return {
       date: exam.tanggal_pemeriksaan,
-      value,
-      secondaryValue,
-      exam
+      value: value!,
+      secondaryValue: secondaryValue || undefined,
+      metadata: exam
     };
-  }).filter(item => item.value !== null && typeof item.value === 'number');
+  }).filter(item => item.value !== null && typeof item.value === 'number' && !isNaN(item.value));
 
-  if (chartData.length === 0) {
-    return (
-      <Card className="p-4">
-        <h4 className="font-medium text-gray-900 mb-2">{title}</h4>
-        <div className="text-center py-8 text-gray-500">
-          Tidak ada data untuk ditampilkan
-        </div>
-      </Card>
-    );
-  }
-
-  // Find min and max values for scaling
-  const values = chartData.map(d => d.value!);
-  const secondaryValues = chartData.map(d => d.secondaryValue).filter(v => v !== null) as number[];
-  
-  const allValues = metric === 'tekanan_darah' ? [...values, ...secondaryValues] : values;
-  const minValue = Math.min(...allValues);
-  const maxValue = Math.max(...allValues);
-  const range = maxValue - minValue;
-  const padding = range * 0.1; // 10% padding
-  const chartMin = Math.max(0, minValue - padding);
-  const chartMax = maxValue + padding;
-  const chartRange = chartMax - chartMin;
-
-  // Chart dimensions
-  const chartWidth = 400;
-  const chartHeight = 200;
-  const marginLeft = 50;
-  const marginRight = 20;
-  const marginTop = 20;
-  const marginBottom = 40;
-  const plotWidth = chartWidth - marginLeft - marginRight;
-  const plotHeight = chartHeight - marginTop - marginBottom;
-
-  // Helper functions
-  const getX = (index: number) => marginLeft + (index / (chartData.length - 1)) * plotWidth;
-  const getY = (value: number) => marginTop + ((chartMax - value) / chartRange) * plotHeight;
-
+  // Format functions
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), 'dd/MM', { locale: id });
@@ -123,7 +75,6 @@ export default function ExaminationChart({
   };
 
   const formatValue = (value: number) => {
-    // Ensure value is a valid number
     if (typeof value !== 'number' || isNaN(value)) {
       return 'N/A';
     }
@@ -135,138 +86,34 @@ export default function ExaminationChart({
     return value.toString();
   };
 
-  // Generate path for line chart
-  const primaryPath = chartData
-    .map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.value!)}`)
-    .join(' ');
-
-  const secondaryPath = metric === 'tekanan_darah' && secondaryValues.length > 0
-    ? chartData
-        .map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.secondaryValue!)}`)
-        .join(' ')
-    : '';
+  // Get metric display name for legend
+  const getMetricName = () => {
+    switch (metric) {
+      case 'berat_badan': return 'Berat Badan';
+      case 'tinggi_badan': return 'Tinggi Badan';
+      case 'tekanan_darah': return 'Sistolik';
+      case 'bmi': return 'BMI';
+      default: return title;
+    }
+  };
 
   return (
-    <Card className="p-4">
-      <h4 className="font-medium text-gray-900 mb-4">{title}</h4>
-      
-      <div className="overflow-x-auto">
-        <svg width={chartWidth} height={chartHeight} className="border rounded">
-          {/* Grid lines */}
-          {[0, 0.25, 0.5, 0.75, 1].map(ratio => {
-            const y = marginTop + ratio * plotHeight;
-            const value = chartMax - ratio * chartRange;
-            return (
-              <g key={ratio}>
-                <line
-                  x1={marginLeft}
-                  y1={y}
-                  x2={marginLeft + plotWidth}
-                  y2={y}
-                  stroke="#e5e7eb"
-                  strokeWidth={1}
-                />
-                <text
-                  x={marginLeft - 5}
-                  y={y + 4}
-                  textAnchor="end"
-                  fontSize="12"
-                  fill="#6b7280"
-                >
-                  {formatValue(value)}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Primary line */}
-          <path
-            d={primaryPath}
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth={2}
-          />
-
-          {/* Secondary line (for blood pressure) */}
-          {secondaryPath && (
-            <path
-              d={secondaryPath}
-              fill="none"
-              stroke="#ef4444"
-              strokeWidth={2}
-            />
-          )}
-
-          {/* Data points */}
-          {chartData.map((d, i) => (
-            <g key={i}>
-              <circle
-                cx={getX(i)}
-                cy={getY(d.value!)}
-                r={4}
-                fill="#3b82f6"
-                stroke="white"
-                strokeWidth={2}
-              />
-              {d.secondaryValue && (
-                <circle
-                  cx={getX(i)}
-                  cy={getY(d.secondaryValue)}
-                  r={4}
-                  fill="#ef4444"
-                  stroke="white"
-                  strokeWidth={2}
-                />
-              )}
-              
-              {/* Date labels */}
-              <text
-                x={getX(i)}
-                y={chartHeight - 10}
-                textAnchor="middle"
-                fontSize="10"
-                fill="#6b7280"
-              >
-                {formatDate(d.date)}
-              </text>
-            </g>
-          ))}
-        </svg>
-      </div>
-
-      {/* Legend */}
-      <div className="mt-4 flex flex-wrap gap-4 text-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-          <span>
-            {metric === 'tekanan_darah' ? 'Sistolik' : title}
-          </span>
-        </div>
-        {metric === 'tekanan_darah' && (
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-            <span>Diastolik</span>
-          </div>
-        )}
-      </div>
-
-      {/* Latest value */}
-      {chartData.length > 0 && (
-        <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-          <p className="text-sm text-gray-600">Nilai Terakhir:</p>
-          <p className="font-medium">
-            {formatValue(chartData[chartData.length - 1].value!)}
-            {chartData[chartData.length - 1].secondaryValue && (
-              <span className="text-red-600 ml-2">
-                / {formatValue(chartData[chartData.length - 1].secondaryValue!)}
-              </span>
-            )}
-          </p>
-          <p className="text-xs text-gray-500">
-            {formatDate(chartData[chartData.length - 1].date)}
-          </p>
-        </div>
-      )}
-    </Card>
+    <ResponsiveChart
+      data={chartData}
+      title={title}
+      metric={getMetricName()}
+      primaryColor="#3b82f6"
+      secondaryColor="#ef4444"
+      showSecondaryLine={metric === 'tekanan_darah'}
+      formatValue={formatValue}
+      formatDate={formatDate}
+      showTooltip={true}
+      showLegend={true}
+      showLatestValue={true}
+      onDataPointClick={(dataPoint, index) => {
+        // Optional: Handle data point clicks for detailed view
+        console.log('Chart data point clicked:', dataPoint, index);
+      }}
+    />
   );
 }

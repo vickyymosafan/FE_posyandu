@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { useBreakpoint } from '@/lib/hooks/useBreakpoint';
 
 interface StatCardProps {
   title: string;
@@ -13,6 +14,8 @@ interface StatCardProps {
   };
   loading?: boolean;
   color?: 'blue' | 'green' | 'yellow' | 'red' | 'purple' | 'gray';
+  chartData?: Array<{ date: string; value: number }>;
+  showMiniChart?: boolean;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
@@ -21,7 +24,9 @@ const StatCard: React.FC<StatCardProps> = ({
   icon,
   trend,
   loading = false,
-  color = 'gray'
+  color = 'gray',
+  chartData,
+  showMiniChart = false
 }) => {
   const colorClasses = {
     blue: {
@@ -80,6 +85,52 @@ const StatCard: React.FC<StatCardProps> = ({
   };
 
   const currentColor = colorClasses[color];
+  const { currentBreakpoint } = useBreakpoint();
+
+  // Mini chart component
+  const renderMiniChart = () => {
+    if (!showMiniChart || !chartData || chartData.length < 2) return null;
+
+    const chartWidth = currentBreakpoint === 'mobile' ? 60 : 80;
+    const chartHeight = 30;
+    const padding = 2;
+    const plotWidth = chartWidth - (padding * 2);
+    const plotHeight = chartHeight - (padding * 2);
+
+    const values = chartData.map(d => d.value);
+    const minValue = Math.min(...values);
+    const maxValue = Math.max(...values);
+    const range = maxValue - minValue || 1;
+
+    const getX = (index: number) => padding + (index / (chartData.length - 1)) * plotWidth;
+    const getY = (value: number) => padding + ((maxValue - value) / range) * plotHeight;
+
+    const path = chartData
+      .map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.value)}`)
+      .join(' ');
+
+    return (
+      <div className="ml-auto">
+        <svg width={chartWidth} height={chartHeight} className="opacity-60">
+          <path
+            d={path}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={1.5}
+          />
+          {chartData.map((d, i) => (
+            <circle
+              key={i}
+              cx={getX(i)}
+              cy={getY(d.value)}
+              r={1}
+              fill="currentColor"
+            />
+          ))}
+        </svg>
+      </div>
+    );
+  };
 
   if (loading) {
     return (
@@ -119,9 +170,12 @@ const StatCard: React.FC<StatCardProps> = ({
             <h3 className="text-sm font-medium text-gray-600 truncate">
               {title}
             </h3>
-            <p className="text-3xl font-bold text-gray-900 mt-1">
-              {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-3xl font-bold text-gray-900 mt-1">
+                {typeof value === 'number' ? value.toLocaleString('id-ID') : value}
+              </p>
+              {renderMiniChart()}
+            </div>
           </div>
         </div>
         

@@ -278,3 +278,7 @@ export function getRelativeTime(date: string | Date): string {
 export function formatRelativeTime(date: string | Date): string {
   return getRelativeTime(date);
 }
+
+// Re-export responsive utilities for easier access
+export * from './utils/responsive';
+export * from './hooks/useBreakpoint';

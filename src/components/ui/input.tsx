@@ -1,6 +1,8 @@
-// Enhanced Input component with validation states
+// Enhanced Input component with validation states and responsive support
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useBreakpoint } from "@/lib/hooks/useBreakpoint";
+import { responsiveForm } from "@/lib/utils/responsive";
 
 export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -10,6 +12,7 @@ export interface InputProps
   label?: string;
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
+  responsive?: boolean;
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
@@ -22,11 +25,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
     label,
     leftIcon,
     rightIcon,
+    responsive = true,
     id,
     ...props 
   }, ref) => {
     const generatedId = React.useId();
-  const inputId = id || generatedId;
+    const inputId = id || generatedId;
+    const { currentBreakpoint } = useBreakpoint();
 
     return (
       <div className="w-full">
@@ -48,7 +53,14 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             type={type}
             className={cn(
-              "flex h-9 w-full rounded-md border bg-white px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+              "flex w-full rounded-md border bg-white shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50",
+              // Responsive sizing
+              responsive && responsiveForm[currentBreakpoint].inputHeight,
+              responsive && responsiveForm[currentBreakpoint].fontSize,
+              responsive && responsiveForm[currentBreakpoint].padding,
+              responsive && responsiveForm[currentBreakpoint].borderRadius,
+              // Non-responsive fallback
+              !responsive && "h-9 px-3 py-1 text-sm",
               // Default border
               "border-gray-300 focus-visible:ring-blue-500 focus-visible:border-blue-500",
               // Error state
@@ -92,6 +104,7 @@ export interface TextareaProps
   success?: boolean;
   helperText?: string;
   label?: string;
+  responsive?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
@@ -101,11 +114,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     success = false,
     helperText,
     label,
+    responsive = true,
     id,
     ...props 
   }, ref) => {
     const generatedId = React.useId();
-  const textareaId = id || generatedId;
+    const textareaId = id || generatedId;
+    const { currentBreakpoint } = useBreakpoint();
 
     return (
       <div className="w-full">
@@ -120,7 +135,13 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           id={textareaId}
           className={cn(
-            "flex min-h-[60px] w-full rounded-md border bg-white px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-vertical",
+            "flex min-h-[60px] w-full rounded-md border bg-white shadow-sm transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50 resize-vertical",
+            // Responsive sizing
+            responsive && responsiveForm[currentBreakpoint].fontSize,
+            responsive && responsiveForm[currentBreakpoint].padding,
+            responsive && responsiveForm[currentBreakpoint].borderRadius,
+            // Non-responsive fallback
+            !responsive && "px-3 py-2 text-sm",
             // Default border
             "border-gray-300 focus-visible:ring-blue-500 focus-visible:border-blue-500",
             // Error state
